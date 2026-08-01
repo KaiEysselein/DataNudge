@@ -100,8 +100,13 @@ The current version includes:
 
 DataNudge is licensed under the **GNU General Public License v3.0**.
 
+## Development status
 
+The current development backlog and project handover notes are maintained in:
 
+- [Bugs and planned features](BUGS_AND_FEATURES.md)
+- [ChatGPT project handover](HANDOVER.md)
 
-
+The next planned maintenance release is `0.1.0.2`.  
+The next planned feature release is `0.1.1.0`.
 

@@ -1,0 +1,298 @@
+﻿# DataNudge ChatGPT Handover
+
+**Project:** DataNudge  
+**Repository:** `https://github.com/KaiEysselein/DataNudge`  
+**Local project path:** `D:\Github\DataNudge`  
+**Application ID:** `com.kaieysselein.datanudge`  
+**Current released version:** `0.1.0.1`  
+**Current GitHub release tag:** `v0.1.0.1`  
+**Licence:** GNU General Public License v3.0  
+**Last updated:** 1 August 2026
+
+## 1. Purpose
+
+DataNudge is an Android app that helps users remain aware of their current network connection and avoid accidental high mobile-data use.
+
+The user selects apps such as YouTube, Netflix, Spotify, TikTok or Instagram. When a selected app opens while mobile data is active, DataNudge displays a reminder.
+
+## 2. Current architecture
+
+### MainActivity
+
+Path:
+
+```text
+app\src\main\java\com\kaieysselein\datanudge\MainActivity.kt
+```
+
+Responsibilities include:
+
+- main Compose user interface;
+- home screen;
+- settings;
+- monitored-app selection;
+- permissions;
+- About page;
+- first-run setup wizard;
+- mandatory disclaimer acceptance;
+- permanent disclaimer viewer;
+- displayed app version.
+
+### NetworkMonitorService
+
+Path:
+
+```text
+app\src\main\java\com\kaieysselein\datanudge\NetworkMonitorService.kt
+```
+
+Responsibilities include:
+
+- foreground monitoring service;
+- active connection detection;
+- foreground-app usage-event checking;
+- mobile-data reminder overlay;
+- ongoing status notification;
+- connection-specific status icons;
+- selected-app monitoring state.
+
+### BootReceiver
+
+Path:
+
+```text
+app\src\main\java\com\kaieysselein\datanudge\BootReceiver.kt
+```
+
+Responsibilities include:
+
+- restarting monitoring after device reboot;
+- restarting monitoring after an app update when monitoring was previously enabled.
+
+## 3. Current functionality
+
+- Wi-Fi, mobile-data, VPN, Ethernet, Bluetooth-network and offline detection
+- Foreground monitoring service
+- Ongoing status notification
+- Connection-specific shield icons
+- User-selected monitored apps
+- Curated list of common high-data apps
+- Overlay warning when a selected app opens on mobile data
+- Sound and vibration on connection changes
+- Start monitoring after reboot
+- Guided setup wizard
+- Permissions, Settings and About screens
+- Mandatory disclaimer acceptance
+- Online disclaimer and privacy pages
+- Local storage of preferences and selected package names
+
+## 4. Current release
+
+### Version and code
+
+```text
+Version name: 0.1.0.1
+Version code: 10001
+```
+
+### GitHub release
+
+```text
+https://github.com/KaiEysselein/DataNudge/releases/tag/v0.1.0.1
+```
+
+### Direct APK
+
+```text
+https://github.com/KaiEysselein/DataNudge/releases/download/v0.1.0.1/DataNudge-0.1.0.1.apk
+```
+
+### APK SHA-256
+
+```text
+C98A0F329915BD4AAEAC39684A45636AC9277BEBF8062B064C54408927FE7E4A
+```
+
+### Signing status
+
+The current downloadable APK is signed with the Android debug key. It is suitable for direct testing and GitHub distribution, but it is not the final Google Play production build.
+
+A permanent upload keystore has not yet been created.
+
+## 5. GitHub Pages
+
+Website:
+
+```text
+https://kaieysselein.github.io/DataNudge/
+```
+
+Privacy page:
+
+```text
+https://kaieysselein.github.io/DataNudge/privacy.html
+```
+
+Disclaimer page:
+
+```text
+https://kaieysselein.github.io/DataNudge/disclaimer.html
+```
+
+GitHub Pages is configured from:
+
+```text
+Branch: main
+Folder: /docs
+```
+
+## 6. Licence
+
+The repository uses the GNU General Public License v3.0. The canonical licence text is stored in `LICENSE`.
+
+## 7. Versioning convention
+
+```text
+major.play-store-publication.feature.bug-fix
+```
+
+Examples:
+
+```text
+0.1.0.1  current release
+0.1.0.2  next bug-fix release
+0.1.1.0  next feature release
+```
+
+## 8. Planned work
+
+Read `BUGS_AND_FEATURES.md`.
+
+The next planned bug-fix release is `0.1.0.2`.
+
+The next planned feature release is `0.1.1.0`, which will add current connection duration.
+
+## 9. Build environment
+
+### Project path
+
+```text
+D:\Github\DataNudge
+```
+
+### Android Studio Java
+
+```text
+D:\Program Files\Android\Android Studio\jbr
+```
+
+For PowerShell builds:
+
+```powershell
+$env:JAVA_HOME = "D:\Program Files\Android\Android Studio\jbr"
+$env:Path = "$env:JAVA_HOME\bin;$env:Path"
+```
+
+### Build debug APK
+
+```powershell
+cd "D:\Github\DataNudge"
+.\gradlew.bat assembleDebug
+```
+
+Output:
+
+```text
+app\build\outputs\apk\debug\app-debug.apk
+```
+
+## 10. Git workflow
+
+Repository:
+
+```text
+https://github.com/KaiEysselein/DataNudge
+```
+
+Branch:
+
+```text
+main
+```
+
+Before committing:
+
+```powershell
+git status --short
+git diff
+```
+
+Typical commit and push:
+
+```powershell
+git add <explicit-files>
+git commit -m "Describe the change"
+git push origin main
+```
+
+Use explicit paths where practical. Do not stage backup files.
+
+## 11. Backup conventions
+
+Local backup folders and files are excluded through `.gitignore`.
+
+Examples:
+
+```text
+backup-before-*/
+*.backup
+*.backup-before-*
+```
+
+Scripts create timestamped backups before editing source files.
+
+## 12. Encoding precautions
+
+Earlier PowerShell edits caused text-encoding problems.
+
+Rules:
+
+- prefer ASCII-only PowerShell scripts where possible;
+- represent non-ASCII Kotlin text using Unicode escapes;
+- for `für Lena`, use `"f\u00fcr Lena"`;
+- avoid inserting literal PowerShell backtick markers into Kotlin source;
+- always build after scripted text replacement;
+- inspect `git diff` before committing.
+
+## 13. Current known warning
+
+The debug build reports a deprecation warning in `NetworkMonitorService.kt` relating to `MOVE_TO_FOREGROUND`.
+
+The warning does not stop the build, but it should be reviewed later.
+
+## 14. Disclaimer behaviour
+
+The current app contains:
+
+- mandatory first-launch disclaimer acceptance;
+- a checkbox that must be selected before continuing;
+- `Accept and continue`;
+- `Decline and exit`;
+- a permanent About-page disclaimer link;
+- an online disclaimer page.
+
+The acceptance version is stored locally. If the disclaimer changes materially, increase the disclaimer version so users must accept again.
+
+Known issue: the decline action can be inaccessible on smaller screens. Keep the action area fixed while only the disclaimer body scrolls.
+
+## 15. Important next-session instructions
+
+1. Read `HANDOVER.md`.
+2. Read `BUGS_AND_FEATURES.md`.
+3. Confirm the current Git branch and status.
+4. Create a timestamped backup.
+5. Make one controlled group of changes.
+6. Build successfully.
+7. Inspect the app manually.
+8. Commit and push only after verification.
+9. Publish a new GitHub release only after increasing the version.
