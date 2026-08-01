@@ -14,3 +14,7 @@ footer{text-align:center;border-top:1px solid var(--border);padding:32px;color:v
 .button.secondary{background:transparent;border:1px solid var(--border)}
 .button.download{background:var(--green);color:#031108}
 .install-note{color:var(--muted);font-size:.9rem;margin-top:14px}
+
+.download-warning{max-width:760px;margin:24px auto;padding:16px 18px;border:1px solid var(--border);border-radius:14px;background:var(--surface);color:var(--muted)}
+.download-warning a{color:var(--text);font-weight:700}
+

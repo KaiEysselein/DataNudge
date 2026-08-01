@@ -77,7 +77,7 @@ private val ScreenDark = Color(0xFF07101D)
 private val CardDark = Color(0xE6111E2F)
 private val TextMuted = Color(0xFFB8C4D6)
 
-private const val VERSION_DISPLAY = "0.1.0.0"
+private const val VERSION_DISPLAY = "0.1.0.1"
 private const val GITHUB_URL = "https://github.com/KaiEysselein/DataNudge"
 private const val UI_PREFERENCES = "datanudge_ui_preferences"
 private const val KEY_SETUP_COMPLETED = "setup_completed"
@@ -126,6 +126,18 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val disclaimerPreferences = getSharedPreferences(
+            DISCLAIMER_PREFERENCES,
+            android.content.Context.MODE_PRIVATE
+        )
+        if (
+            disclaimerPreferences.getInt(DISCLAIMER_ACCEPTED_VERSION, 0) <
+            DISCLAIMER_VERSION
+        ) {
+            window.decorView.post {
+                showDataNudgeDisclaimer(this, true)
+            }
+        }
 
         setContent {
             DataNudgeTheme {
@@ -1392,6 +1404,7 @@ private fun SettingsRow(
 
 @Composable
 private fun AboutScreen() {
+    val aboutContext = androidx.compose.ui.platform.LocalContext.current
     val uriHandler = LocalUriHandler.current
 
     Column(
@@ -1415,6 +1428,7 @@ private fun AboutScreen() {
             fontWeight = FontWeight.Bold
         )
 
+        Text(text = "f\u00fcr Lena")
         Text(
             text = VERSION_DISPLAY,
             modifier = Modifier.padding(top = 5.dp),
@@ -1586,8 +1600,105 @@ private fun stopNetworkMonitorService(
 
     NetworkMonitorService.setMonitoringEnabled(context, false)
 }
+private const val DISCLAIMER_VERSION = 1
+private const val DISCLAIMER_PREFERENCES = "datanudge_legal"
+private const val DISCLAIMER_ACCEPTED_VERSION = "accepted_disclaimer_version"
 
+private val DATANUDGE_DISCLAIMER_TEXT = """
+DataNudge is an informational reminder tool intended to help users remain aware of their current network connection.
 
+DataNudge does not block mobile-data use, measure actual data consumption, prevent roaming, guarantee detection of every app or connection change, or guarantee that reminders will be displayed correctly or on time.
+
+Network status, foreground-app detection, notifications and reminders depend on Android permissions, device settings, manufacturer restrictions and operating-system behaviour. DataNudge may provide delayed, incomplete or incorrect information.
+
+DataNudge runs a foreground monitoring service and may periodically check network and app-usage status. Depending on the device, Android version, permissions, manufacturer settings and monitoring configuration, this may use processor, memory, network or other system resources and may cause the battery to deplete faster than it otherwise would.
+
+You use DataNudge entirely at your own discretion and risk. You remain solely responsible for checking your network connection, mobile-data usage, data allowance, roaming status, device settings, battery level and all charges imposed by your mobile-network provider or another service provider.
+
+By accepting this notice, you accept responsibility for mobile-data charges, battery consumption, device-resource usage, missed or delayed reminders, service interruptions, lost settings and other consequences arising from your use of or reliance on DataNudge.
+
+To the fullest extent permitted by applicable law, the developer will not be liable for indirect, incidental, consequential or other losses arising from the use of, inability to use, or reliance on DataNudge. Nothing in this notice excludes or limits any liability or consumer right that cannot legally be excluded or limited.
+
+DataNudge stores its settings and selected-app list locally on the device. Refer to the Privacy Information page for further details.
+""".trimIndent()
+
+private fun showDataNudgeDisclaimer(
+    activity: android.app.Activity,
+    mandatory: Boolean
+) {
+    val container = android.widget.LinearLayout(activity).apply {
+        orientation = android.widget.LinearLayout.VERTICAL
+        val padding = (20 * resources.displayMetrics.density).toInt()
+        setPadding(padding, padding, padding, padding)
+    }
+
+    val body = android.widget.TextView(activity).apply {
+        text = DATANUDGE_DISCLAIMER_TEXT
+        textSize = 15f
+        setTextIsSelectable(true)
+    }
+    container.addView(body)
+
+    val acknowledgement = android.widget.CheckBox(activity).apply {
+        text = "I have read and accept the Disclaimer and Terms of Use. I understand that I use DataNudge at my own risk and remain responsible for checking my connection, data usage, battery level and any resulting charges."
+        visibility = if (mandatory) android.view.View.VISIBLE else android.view.View.GONE
+    }
+    container.addView(acknowledgement)
+
+    val scroll = android.widget.ScrollView(activity).apply {
+        addView(container)
+    }
+
+    val builder = android.app.AlertDialog.Builder(activity)
+        .setTitle("Disclaimer and Terms of Use")
+        .setView(scroll)
+        .setCancelable(!mandatory)
+        .setPositiveButton(if (mandatory) "Accept and continue" else "Close", null)
+        .setNeutralButton("Read online") { _, _ ->
+            val intent = android.content.Intent(
+                android.content.Intent.ACTION_VIEW,
+                android.net.Uri.parse("https://kaieysselein.github.io/DataNudge/disclaimer.html")
+            )
+            activity.startActivity(intent)
+        }
+
+    if (mandatory) {
+        builder.setNegativeButton("Decline and exit", null)
+    }
+
+    val dialog = builder.create()
+
+    dialog.setOnShowListener {
+        dialog.getButton(android.app.AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+            if (!mandatory || acknowledgement.isChecked) {
+                if (mandatory) {
+                    activity.getSharedPreferences(
+                        DISCLAIMER_PREFERENCES,
+                        android.content.Context.MODE_PRIVATE
+                    ).edit()
+                        .putInt(DISCLAIMER_ACCEPTED_VERSION, DISCLAIMER_VERSION)
+                        .apply()
+                }
+                dialog.dismiss()
+            } else {
+                android.widget.Toast.makeText(
+                    activity,
+                    "Please tick the acceptance box before continuing.",
+                    android.widget.Toast.LENGTH_LONG
+                ).show()
+            }
+        }
+
+        if (mandatory) {
+            dialog.getButton(android.app.AlertDialog.BUTTON_NEGATIVE).setOnClickListener {
+                dialog.dismiss()
+                activity.finishAffinity()
+            }
+        }
+    }
+
+    dialog.show()
+}
 
 
 

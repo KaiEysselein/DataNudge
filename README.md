@@ -1,9 +1,9 @@
 ﻿# DataNudge
 
 <p align="center">
-  <a href="https://github.com/KaiEysselein/DataNudge/releases/download/v0.1.0.0/DataNudge-0.1.0.0.apk"><strong>Download DataNudge 0.1.0.0 APK</strong></a>
+  <a href="https://github.com/KaiEysselein/DataNudge/releases/download/v0.1.0.1/DataNudge-0.1.0.1.apk"><strong>Download DataNudge 0.1.0.1 APK</strong></a>
   &nbsp;|&nbsp;
-  <a href="https://github.com/KaiEysselein/DataNudge/releases/tag/v0.1.0.0">View release details</a>
+  <a href="https://github.com/KaiEysselein/DataNudge/releases/tag/v0.1.0.1">View release details</a>
 </p>
 
 > **Android installation:** Download the APK, open it on your phone, and choose **Update** or **Install**. Android may ask you to allow installation from your browser or file manager.
@@ -13,7 +13,7 @@
 
 Choose apps such as YouTube, Netflix, Spotify, TikTok, or Instagram. When one of the selected apps opens while the phone is using mobile data, DataNudge displays a clear reminder.
 
-**Current version:** `0.1.0.0`
+**Current version:** `0.1.0.1`
 
 ## What DataNudge does
 
@@ -91,6 +91,7 @@ The current version includes:
 
 - [Project website](https://kaieysselein.github.io/DataNudge/)
 - [Privacy information](https://kaieysselein.github.io/DataNudge/privacy.html)
+- [Disclaimer and Terms of Use](https://kaieysselein.github.io/DataNudge/disclaimer.html)
 - [Repository](https://github.com/KaiEysselein/DataNudge)
 - [Issues](https://github.com/KaiEysselein/DataNudge/issues)
 - [Licence](LICENSE)
@@ -98,6 +99,9 @@ The current version includes:
 ## Licence
 
 DataNudge is licensed under the **GNU General Public License v3.0**.
+
+
+
 
 
 
