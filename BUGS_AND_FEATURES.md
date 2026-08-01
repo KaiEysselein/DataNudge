@@ -1,6 +1,10 @@
-﻿# DataNudge Bugs and Features
+﻿## Completed in 0.1.0.2
 
-**Current released version:** `0.1.0.1`  
+- Corrected the `für Lena` text colour so it matches the version number.
+
+# DataNudge Bugs and Features
+
+**Current released version:** `0.1.0.2`  
 **Next planned bug-fix version:** `0.1.0.2`  
 **Next planned feature version:** `0.1.1.0`  
 **Last updated:** 1 August 2026
@@ -19,14 +23,6 @@ major.play-store-publication.feature.bug-fix
 - The fourth number increases for bug-fix releases.
 
 ## Planned bug fixes for 0.1.0.2
-
-### About-page dedication colour
-
-**Current behaviour:**  
-The `für Lena` text uses the default text colour.
-
-**Required change:**  
-Display `für Lena` using the same colour and visual treatment as the version number directly below it.
 
 ### Disclaimer action buttons on smaller screens
 
@@ -137,3 +133,4 @@ Display the connection start time and duration directly below the current connec
 - Added wording covering battery and device-resource use.
 - Added explicit user responsibility for connection checking, data use, battery level and resulting charges.
 - Published a downloadable GitHub APK release.
+

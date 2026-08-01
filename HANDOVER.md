@@ -4,8 +4,8 @@
 **Repository:** `https://github.com/KaiEysselein/DataNudge`  
 **Local project path:** `D:\Github\DataNudge`  
 **Application ID:** `com.kaieysselein.datanudge`  
-**Current released version:** `0.1.0.1`  
-**Current GitHub release tag:** `v0.1.0.1`  
+**Current released version:** `0.1.0.2`  
+**Current GitHub release tag:** `v0.1.0.2`  
 **Licence:** GNU General Public License v3.0  
 **Last updated:** 1 August 2026
 
@@ -91,20 +91,20 @@ Responsibilities include:
 ### Version and code
 
 ```text
-Version name: 0.1.0.1
+Version name: 0.1.0.2
 Version code: 10001
 ```
 
 ### GitHub release
 
 ```text
-https://github.com/KaiEysselein/DataNudge/releases/tag/v0.1.0.1
+https://github.com/KaiEysselein/DataNudge/releases/tag/v0.1.0.2
 ```
 
 ### Direct APK
 
 ```text
-https://github.com/KaiEysselein/DataNudge/releases/download/v0.1.0.1/DataNudge-0.1.0.1.apk
+https://github.com/KaiEysselein/DataNudge/releases/download/v0.1.0.2/DataNudge-0.1.0.2.apk
 ```
 
 ### APK SHA-256
@@ -159,7 +159,7 @@ major.play-store-publication.feature.bug-fix
 Examples:
 
 ```text
-0.1.0.1  current release
+0.1.0.2  current release
 0.1.0.2  next bug-fix release
 0.1.1.0  next feature release
 ```
@@ -296,3 +296,4 @@ Known issue: the decline action can be inaccessible on smaller screens. Keep the
 7. Inspect the app manually.
 8. Commit and push only after verification.
 9. Publish a new GitHub release only after increasing the version.
+
