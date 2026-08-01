@@ -24,3 +24,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "DataNudge"
 include(":app")
+include(":app")

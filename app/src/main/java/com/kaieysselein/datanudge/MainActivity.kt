@@ -1,27 +1,41 @@
 package com.kaieysselein.datanudge
 
+import android.Manifest
 import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.ConnectivityManager
+import android.net.Network
 import android.net.NetworkCapabilities
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import com.kaieysselein.datanudge.ui.theme.DataNudgeTheme
 
 class MainActivity : ComponentActivity() {
@@ -35,7 +49,11 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    ConnectionScreen()
+                    ConnectionScreen(
+                        hideApp = {
+                            moveTaskToBack(true)
+                        }
+                    )
                 }
             }
         }
@@ -43,9 +61,79 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun ConnectionScreen() {
+fun ConnectionScreen(
+    hideApp: () -> Unit
+) {
     val context = LocalContext.current
-    val connectionStatus = getConnectionStatus(context)
+
+    val connectivityManager = remember {
+        context.getSystemService(Context.CONNECTIVITY_SERVICE)
+                as ConnectivityManager
+    }
+
+    var connectionStatus by remember {
+        mutableStateOf(
+            getConnectionStatus(connectivityManager)
+        )
+    }
+
+    var monitoringEnabled by remember {
+        mutableStateOf(
+            NetworkMonitorService.isMonitoringEnabled(context)
+        )
+    }
+
+    val notificationPermissionLauncher =
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.RequestPermission()
+        ) { permissionGranted ->
+
+            if (permissionGranted ||
+                Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU
+            ) {
+                startNetworkMonitorService(context)
+                monitoringEnabled = true
+            }
+        }
+
+    DisposableEffect(connectivityManager) {
+        val networkCallback =
+            object : ConnectivityManager.NetworkCallback() {
+
+                override fun onAvailable(network: Network) {
+                    connectionStatus =
+                        getConnectionStatus(connectivityManager)
+                }
+
+                override fun onLost(network: Network) {
+                    connectionStatus =
+                        getConnectionStatus(connectivityManager)
+                }
+
+                override fun onCapabilitiesChanged(
+                    network: Network,
+                    networkCapabilities: NetworkCapabilities
+                ) {
+                    connectionStatus =
+                        describeNetworkCapabilities(
+                            networkCapabilities
+                        )
+                }
+            }
+
+        connectivityManager.registerDefaultNetworkCallback(
+            networkCallback
+        )
+
+        connectionStatus =
+            getConnectionStatus(connectivityManager)
+
+        onDispose {
+            connectivityManager.unregisterNetworkCallback(
+                networkCallback
+            )
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -60,52 +148,124 @@ fun ConnectionScreen() {
             fontWeight = FontWeight.Bold
         )
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(
+            modifier = Modifier.height(32.dp)
+        )
 
         Text(
             text = "Your current connection:",
             fontSize = 18.sp
         )
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(
+            modifier = Modifier.height(12.dp)
+        )
 
         Text(
             text = connectionStatus,
             fontSize = 28.sp,
             fontWeight = FontWeight.Bold
         )
+
+        Spacer(
+            modifier = Modifier.height(32.dp)
+        )
+
+        Text(
+            text =
+                if (monitoringEnabled) {
+                    "Background monitoring is on"
+                } else {
+                    "Background monitoring is off"
+                },
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Medium
+        )
+
+        Spacer(
+            modifier = Modifier.height(16.dp)
+        )
+
+        Button(
+            onClick = {
+                if (monitoringEnabled) {
+                    stopNetworkMonitorService(context)
+                    monitoringEnabled = false
+                } else {
+                    val permissionRequired =
+                        Build.VERSION.SDK_INT >=
+                                Build.VERSION_CODES.TIRAMISU &&
+                                ContextCompat.checkSelfPermission(
+                                    context,
+                                    Manifest.permission.POST_NOTIFICATIONS
+                                ) != PackageManager.PERMISSION_GRANTED
+
+                    if (permissionRequired) {
+                        notificationPermissionLauncher.launch(
+                            Manifest.permission.POST_NOTIFICATIONS
+                        )
+                    } else {
+                        startNetworkMonitorService(context)
+                        monitoringEnabled = true
+                    }
+                }
+            }
+        ) {
+            Text(
+                text =
+                    if (monitoringEnabled) {
+                        "Stop background monitoring"
+                    } else {
+                        "Start background monitoring"
+                    }
+            )
+        }
+
+        Spacer(
+            modifier = Modifier.height(12.dp)
+        )
+
+        Button(
+            onClick = hideApp
+        ) {
+            Text("OK")
+        }
     }
 }
 
-private fun getConnectionStatus(context: Context): String {
-    val connectivityManager =
-        context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+private fun startNetworkMonitorService(
+    context: Context
+) {
+    val intent =
+        Intent(
+            context,
+            NetworkMonitorService::class.java
+        )
 
-    val activeNetwork =
-        connectivityManager.activeNetwork
-            ?: return "No network connection"
+    ContextCompat.startForegroundService(
+        context,
+        intent
+    )
 
-    val capabilities =
-        connectivityManager.getNetworkCapabilities(activeNetwork)
-            ?: return "Unknown connection"
+    NetworkMonitorService.setMonitoringEnabled(
+        context,
+        true
+    )
+}
 
-    return when {
-        capabilities.hasTransport(NetworkCapabilities.TRANSPORT_VPN) ->
-            "VPN connection"
+private fun stopNetworkMonitorService(
+    context: Context
+) {
+    val intent =
+        Intent(
+            context,
+            NetworkMonitorService::class.java
+        )
 
-        capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ->
-            "Wi-Fi"
+    context.stopService(intent)
 
-        capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) ->
-            "Mobile data"
-
-        capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) ->
-            "Ethernet"
-
-        capabilities.hasTransport(NetworkCapabilities.TRANSPORT_BLUETOOTH) ->
-            "Bluetooth network"
-
-        else ->
-            "Other connection"
-    }
+    NetworkMonitorService.setMonitoringEnabled(
+        context,
+        false
+    )
 }
