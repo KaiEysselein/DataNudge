@@ -6,7 +6,7 @@
 
 Choose apps such as YouTube, Netflix, Spotify, TikTok, or Instagram. When one of the selected apps opens while the phone is using mobile data, DataNudge displays a clear reminder.
 
-**Current version:** `0.0.4.1-alpha`
+**Current version:** `0.1.0.0`
 
 ## What DataNudge does
 
@@ -91,3 +91,4 @@ The current version includes:
 ## Licence
 
 DataNudge is licensed under the **GNU General Public License v3.0**.
+

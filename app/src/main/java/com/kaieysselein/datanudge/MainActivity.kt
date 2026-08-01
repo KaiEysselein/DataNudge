@@ -77,7 +77,7 @@ private val ScreenDark = Color(0xFF07101D)
 private val CardDark = Color(0xE6111E2F)
 private val TextMuted = Color(0xFFB8C4D6)
 
-private const val VERSION_DISPLAY = "0.0.4.1 (alpha)"
+private const val VERSION_DISPLAY = "0.1.0.0"
 private const val GITHUB_URL = "https://github.com/KaiEysselein/DataNudge"
 private const val UI_PREFERENCES = "datanudge_ui_preferences"
 private const val KEY_SETUP_COMPLETED = "setup_completed"
@@ -1586,6 +1586,7 @@ private fun stopNetworkMonitorService(
 
     NetworkMonitorService.setMonitoringEnabled(context, false)
 }
+
 
 
 
