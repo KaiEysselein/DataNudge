@@ -1,4 +1,4 @@
-package com.kaieysselein.datanudge
+﻿package com.kaieysselein.datanudge
 
 import android.Manifest
 import android.app.AppOpsManager
@@ -98,8 +98,12 @@ private val ScreenDark = Color(0xFF07101D)
 private val CardDark = Color(0xE6111E2F)
 private val TextMuted = Color(0xFFB8C4D6)
 
-private const val VERSION_DISPLAY = "0.2.3.0"
+private const val VERSION_DISPLAY = "0.2.3.1"
 private const val GITHUB_URL = "https://github.com/KaiEysselein/DataNudge"
+private const val DATANUDGE_WEBSITE_URL =
+    "https://kaieysselein.github.io/DataNudge/"
+private const val WHATSAPP_GROUP_URL =
+    "https://chat.whatsapp.com/Ctgh4hsvs1iD2K06qsedSc"
 private const val GITHUB_LATEST_RELEASE_API =
     "https://api.github.com/repos/KaiEysselein/DataNudge/releases/latest"
 private const val UI_PREFERENCES = "datanudge_ui_preferences"
@@ -2556,88 +2560,219 @@ private fun isNewerVersion(
 }
 @Composable
 private fun AboutScreen() {
-    val aboutContext = androidx.compose.ui.platform.LocalContext.current
+    val aboutContext = LocalContext.current
     val uriHandler = LocalUriHandler.current
 
-    Column(
+    LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .padding(horizontal = 24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Image(
-            painter = painterResource(R.mipmap.datanudge_icon),
-            contentDescription = "DataNudge logo",
-            modifier = Modifier.size(124.dp)
-        )
+        item {
+            Spacer(Modifier.height(24.dp))
 
-        Text(
-            text = "DataNudge",
-            modifier = Modifier.padding(top = 16.dp),
-            color = Color.White,
-            fontSize = 31.sp,
-            fontWeight = FontWeight.Bold
-        )
+            Image(
+                painter = painterResource(R.mipmap.datanudge_icon),
+                contentDescription = "DataNudge logo",
+                modifier = Modifier.size(112.dp)
+            )
 
-        Text(
-            text = "f\u00fcr Lena & Pascal",
-            color = TextMuted
-        )
-        Text(
-            text = VERSION_DISPLAY,
-            modifier = Modifier.padding(top = 5.dp),
-            color = TextMuted
-        )
+            Text(
+                text = "DataNudge",
+                modifier = Modifier.padding(top = 14.dp),
+                color = Color.White,
+                fontSize = 31.sp,
+                fontWeight = FontWeight.Bold
+            )
 
-        Text(
-            text = "By Kai Eysselein",
-            modifier = Modifier.padding(top = 8.dp),
-            color = TextMuted
-        )
+            Text(
+                text = "fÃ¼r Lena & Pascal",
+                color = TextMuted
+            )
 
-        Text(
-            text = "A simple reminder when selected apps are opened while mobile data is active.",
-            modifier = Modifier.padding(top = 18.dp),
-            color = Color.White,
-            textAlign = TextAlign.Center
-        )
+            Text(
+                text = VERSION_DISPLAY,
+                modifier = Modifier.padding(top = 5.dp),
+                color = TextMuted
+            )
 
-        OutlinedButton(
-            onClick = { uriHandler.openUri(GITHUB_URL) },
-            modifier = Modifier.padding(top = 18.dp),
-            shape = RoundedCornerShape(14.dp)
-        ) {
-            Text("Open GitHub")
-        }
+            Text(
+                text = "By Kai Eysselein",
+                modifier = Modifier.padding(top = 8.dp),
+                color = TextMuted
+            )
 
-        OutlinedButton(
-            onClick = {
-                (aboutContext as? android.app.Activity)?.let { activity ->
-                    showDataNudgePrivacyNotice(activity)
-                }
-            },
-            modifier = Modifier.padding(top = 10.dp),
-            shape = RoundedCornerShape(14.dp)
-        ) {
-            Text("Privacy statement")
-        }
+            Text(
+                text =
+                    "A simple reminder when selected apps are " +
+                        "opened while mobile data is active.",
+                modifier = Modifier.padding(top = 18.dp),
+                color = Color.White,
+                textAlign = TextAlign.Center
+            )
 
-        OutlinedButton(
-            onClick = {
-                (aboutContext as? android.app.Activity)?.let { activity ->
-                    showDataNudgeDisclaimer(
-                        activity = activity,
-                        mandatory = false
-                    )
-                }
-            },
-            modifier = Modifier.padding(top = 10.dp),
-            shape = RoundedCornerShape(14.dp)
-        ) {
-            Text("Disclaimer notice")
+            OutlinedButton(
+                onClick = {
+                    shareDataNudgeViaWhatsApp(aboutContext)
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 18.dp),
+                shape = RoundedCornerShape(14.dp)
+            ) {
+                Text("Share DataNudge via WhatsApp")
+            }
+
+            OutlinedButton(
+                onClick = {
+                    openDataNudgeWhatsAppGroup(aboutContext)
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 10.dp),
+                shape = RoundedCornerShape(14.dp)
+            ) {
+                Text("Join the DataNudge WhatsApp group")
+            }
+
+            OutlinedButton(
+                onClick = { uriHandler.openUri(GITHUB_URL) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 10.dp),
+                shape = RoundedCornerShape(14.dp)
+            ) {
+                Text("Open GitHub")
+            }
+
+            OutlinedButton(
+                onClick = {
+                    (aboutContext as? android.app.Activity)?.let {
+                        activity ->
+                        showDataNudgePrivacyNotice(activity)
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 10.dp),
+                shape = RoundedCornerShape(14.dp)
+            ) {
+                Text("Privacy statement")
+            }
+
+            OutlinedButton(
+                onClick = {
+                    (aboutContext as? android.app.Activity)?.let {
+                        activity ->
+                        showDataNudgeDisclaimer(
+                            activity = activity,
+                            mandatory = false
+                        )
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 10.dp),
+                shape = RoundedCornerShape(14.dp)
+            ) {
+                Text("Disclaimer notice")
+            }
+
+            Spacer(Modifier.height(28.dp))
         }
     }
+}
+
+private fun shareDataNudgeViaWhatsApp(
+    context: Context
+) {
+    val shareText =
+        "DataNudge helps you notice when selected apps are " +
+            "using mobile data. Learn more and download it here: " +
+            DATANUDGE_WEBSITE_URL
+
+    val baseIntent =
+        Intent(Intent.ACTION_SEND).apply {
+            type = "text/plain"
+            putExtra(Intent.EXTRA_TEXT, shareText)
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+
+    val whatsappPackages =
+        listOf(
+            "com.whatsapp",
+            "com.whatsapp.w4b"
+        )
+
+    val packageManager = context.packageManager
+
+    val installedPackage =
+        whatsappPackages.firstOrNull { packageName ->
+            try {
+                packageManager.getPackageInfo(packageName, 0)
+                true
+            } catch (_: PackageManager.NameNotFoundException) {
+                false
+            }
+        }
+
+    if (installedPackage != null) {
+        baseIntent.setPackage(installedPackage)
+        context.startActivity(baseIntent)
+    } else {
+        context.startActivity(
+            Intent.createChooser(
+                baseIntent,
+                "Share DataNudge"
+            ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        )
+    }
+}
+
+private fun openDataNudgeWhatsAppGroup(
+    context: Context
+) {
+    val groupUri = Uri.parse(WHATSAPP_GROUP_URL)
+
+    val whatsappPackages =
+        listOf(
+            "com.whatsapp",
+            "com.whatsapp.w4b"
+        )
+
+    val packageManager = context.packageManager
+
+    val installedPackage =
+        whatsappPackages.firstOrNull { packageName ->
+            try {
+                packageManager.getPackageInfo(packageName, 0)
+                true
+            } catch (_: PackageManager.NameNotFoundException) {
+                false
+            }
+        }
+
+    val groupIntent =
+        Intent(
+            Intent.ACTION_VIEW,
+            groupUri
+        ).apply {
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+
+    if (installedPackage != null) {
+        groupIntent.setPackage(installedPackage)
+
+        try {
+            context.startActivity(groupIntent)
+            return
+        } catch (_: Exception) {
+            groupIntent.setPackage(null)
+        }
+    }
+
+    context.startActivity(groupIntent)
 }
 
 @Composable
@@ -3000,6 +3135,7 @@ private fun formatApproximateDataUsage(
 
     return "Approximately $value used since the connection changed"
 }
+
 
 
 

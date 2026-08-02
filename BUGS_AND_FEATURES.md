@@ -226,3 +226,13 @@ Add a clearly visible `Close` button while retaining support for the Android bac
 - Permission cards remain visible and actionable after permissions are granted.
 - Added direct access to Android notification, usage-access and overlay settings for reviewing or changing permissions.
 
+
+## WhatsApp sharing and group access
+
+- Added Share DataNudge via WhatsApp to About.
+- Added Join the DataNudge WhatsApp group to About.
+- WhatsApp Business is supported as an alternative package.
+- Sharing falls back to Android's normal share chooser.
+- Opening the group falls back to the browser.
+- About is now scrollable to accommodate the additional actions.
+

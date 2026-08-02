@@ -396,3 +396,17 @@ The Permissions screen always displays all three permission cards and
 their Android settings actions, including when every permission is
 already granted.
 
+
+## WhatsApp actions
+
+The About screen contains two WhatsApp actions. Sharing uses ACTION_SEND
+with a prefilled project description and the DataNudge GitHub Pages URL.
+It prefers standard WhatsApp, then WhatsApp Business, and falls back to
+the Android share chooser.
+
+The group action opens:
+https://chat.whatsapp.com/Ctgh4hsvs1iD2K06qsedSc
+
+It prefers WhatsApp or WhatsApp Business and falls back to the default
+browser or another registered link handler.
+
