@@ -4,8 +4,8 @@
 **Repository:** `https://github.com/KaiEysselein/DataNudge`  
 **Local project path:** `D:\Github\DataNudge`  
 **Application ID:** `com.kaieysselein.datanudge`  
-**Current released version:** `0.1.4.0`  
-**Current GitHub release tag:** `v0.1.4.0`  
+**Current released version:** `0.1.4.1`  
+**Current GitHub release tag:** `v0.1.4.1`  
 **Licence:** GNU General Public License v3.0  
 **Last updated:** 1 August 2026
 
@@ -91,20 +91,20 @@ Responsibilities include:
 ### Version and code
 
 ```text
-Version name: 0.1.4.0
+Version name: 0.1.4.1
 Version code: 10001
 ```
 
 ### GitHub release
 
 ```text
-https://github.com/KaiEysselein/DataNudge/releases/tag/v0.1.4.0
+https://github.com/KaiEysselein/DataNudge/releases/tag/v0.1.4.1
 ```
 
 ### Direct APK
 
 ```text
-https://github.com/KaiEysselein/DataNudge/releases/download/v0.1.4.0/DataNudge-0.1.4.0.apk
+https://github.com/KaiEysselein/DataNudge/releases/download/v0.1.4.1/DataNudge-0.1.4.1.apk
 ```
 
 ### APK SHA-256
@@ -159,18 +159,18 @@ major.play-store-publication.feature.bug-fix
 Examples:
 
 ```text
-0.1.4.0  current release
-0.1.4.0  next bug-fix release
-0.1.4.0  next feature release
+0.1.4.1  current release
+0.1.4.1  next bug-fix release
+0.1.4.1  next feature release
 ```
 
 ## 8. Planned work
 
 Read `BUGS_AND_FEATURES.md`.
 
-The next planned bug-fix release is `0.1.4.0`.
+The next planned bug-fix release is `0.1.4.1`.
 
-The next planned feature release is `0.1.4.0`, which will add current connection duration.
+The next planned feature release is `0.1.4.1`, which will add current connection duration.
 
 ## 9. Build environment
 
@@ -301,4 +301,22 @@ Known issue: the decline action can be inaccessible on smaller screens. Keep the
 
 
 
+
+
+## Legal-information access
+
+DataNudge exposes permanent Privacy statement and Disclaimer notice
+actions from the About page. The disclaimer can be viewed in-app, while
+the published privacy page opens in the browser. Mandatory disclaimer
+acceptance on first use remains separate and unchanged.
+
+
+
+## Resume refresh behaviour
+
+The Home screen observes the Activity lifecycle. On ON_RESUME, it
+immediately re-reads the active connection and the persisted connection
+session, recalculates approximate traffic usage, and refreshes monitoring
+state. The one-second UI refresh loop runs only while the Activity is
+resumed. Resuming must not reset the session baseline.
 

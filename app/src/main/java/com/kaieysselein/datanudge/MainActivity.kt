@@ -61,6 +61,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -68,6 +69,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import com.kaieysselein.datanudge.ui.theme.DataNudgeTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -83,7 +86,7 @@ private val ScreenDark = Color(0xFF07101D)
 private val CardDark = Color(0xE6111E2F)
 private val TextMuted = Color(0xFFB8C4D6)
 
-private const val VERSION_DISPLAY = "0.1.4.0"
+private const val VERSION_DISPLAY = "0.1.4.1"
 private const val GITHUB_URL = "https://github.com/KaiEysselein/DataNudge"
 private const val GITHUB_LATEST_RELEASE_API =
     "https://api.github.com/repos/KaiEysselein/DataNudge/releases/latest"
@@ -397,6 +400,8 @@ private fun HomeScreen(
     hideApp: () -> Unit
 ) {
     val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+
     val connectivityManager = remember {
         context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
     }
@@ -420,6 +425,14 @@ private fun HomeScreen(
 
     var monitoringEnabled by remember {
         mutableStateOf(NetworkMonitorService.isMonitoringEnabled(context))
+    }
+
+    var appResumed by remember {
+        mutableStateOf(
+            lifecycleOwner.lifecycle.currentState.isAtLeast(
+                Lifecycle.State.RESUMED
+            )
+        )
     }
 
     val selectedPackages =
@@ -459,14 +472,65 @@ private fun HomeScreen(
             startNetworkMonitorService(context)
             monitoringEnabled = true
         }
+    }
+
+    DisposableEffect(lifecycleOwner, connectivityManager) {
+        val observer =
+            LifecycleEventObserver { _, event ->
+                when (event) {
+                    Lifecycle.Event.ON_RESUME -> {
+                        appResumed = true
+
+                        val refreshedStatus =
+                            getConnectionStatus(connectivityManager)
+
+                        connectionStatus = refreshedStatus
+                        currentTimeMillis = System.currentTimeMillis()
+                        connectionSession =
+                            NetworkMonitorService.getConnectionSession(
+                                context = context,
+                                currentStatus = refreshedStatus
+                            )
+
+                        monitoringEnabled =
+                            NetworkMonitorService.isMonitoringEnabled(
+                                context
+                            )
+                    }
+
+                    Lifecycle.Event.ON_PAUSE,
+                    Lifecycle.Event.ON_STOP -> {
+                        appResumed = false
+                    }
+
+                    else -> Unit
+                }
+            }
+
+        lifecycleOwner.lifecycle.addObserver(observer)
+
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
+    LaunchedEffect(appResumed) {
+        if (!appResumed) {
+            return@LaunchedEffect
+        }
 
         while (true) {
+            val refreshedStatus =
+                getConnectionStatus(connectivityManager)
+
+            connectionStatus = refreshedStatus
             currentTimeMillis = System.currentTimeMillis()
             connectionSession =
                 NetworkMonitorService.getConnectionSession(
                     context = context,
-                    currentStatus = connectionStatus
+                    currentStatus = refreshedStatus
                 )
+
             kotlinx.coroutines.delay(1_000L)
         }
     }
@@ -1896,6 +1960,33 @@ private fun AboutScreen() {
         ) {
             Text("Open GitHub")
         }
+
+        OutlinedButton(
+            onClick = {
+                uriHandler.openUri(
+                    "https://kaieysselein.github.io/DataNudge/privacy.html"
+                )
+            },
+            modifier = Modifier.padding(top = 10.dp),
+            shape = RoundedCornerShape(14.dp)
+        ) {
+            Text("Privacy statement")
+        }
+
+        OutlinedButton(
+            onClick = {
+                (aboutContext as? android.app.Activity)?.let { activity ->
+                    showDataNudgeDisclaimer(
+                        activity = activity,
+                        mandatory = false
+                    )
+                }
+            },
+            modifier = Modifier.padding(top = 10.dp),
+            shape = RoundedCornerShape(14.dp)
+        ) {
+            Text("Disclaimer notice")
+        }
     }
 }
 
@@ -2203,6 +2294,8 @@ private fun formatApproximateDataUsage(
 
     return "Approximately $value used since the connection changed"
 }
+
+
 
 
 

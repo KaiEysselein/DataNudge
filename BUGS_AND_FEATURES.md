@@ -4,7 +4,7 @@
 
 # DataNudge Bugs and Features
 
-**Current released version:** `0.1.4.0`  
+**Current released version:** `0.1.4.1`  
 **Next planned bug-fix version:** `0.1.0.2`  
 **Next planned feature version:** `0.1.1.0`  
 **Last updated:** 1 August 2026
@@ -142,4 +142,24 @@ Add a clearly visible `Close` button while retaining support for the Android bac
 - Added the supporting text Monitoring will continue in the background.
 - Removed the monitored-app count from the Home connection card.
 - The selected-app count remains available under Settings.
+
+
+## Additional completion in 0.1.4.0
+
+- Added permanent Privacy statement access on the About page.
+- Added permanent Disclaimer notice access on the About page.
+- The disclaimer opens inside DataNudge and retains its Read online option.
+- Privacy information opens the published DataNudge privacy page.
+- Existing mandatory first-run disclaimer acceptance remains unchanged.
+
+
+## Completed in 0.1.4.1
+
+- Fixed stale connection duration after reopening DataNudge.
+- Fixed inconsistent data-used refresh after returning from the background.
+- Added an immediate refresh when the Activity receives ON_RESUME.
+- Re-reads the active connection, session start, traffic counters and monitoring state.
+- Foreground UI values refresh once per second while DataNudge is visible.
+- The UI refresh loop pauses while DataNudge is in the background.
+- Resuming the Activity does not reset the active connection session.
 
