@@ -14,6 +14,7 @@ import android.os.Bundle
 import android.os.Process
 import android.provider.Settings
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -82,7 +83,7 @@ private val ScreenDark = Color(0xFF07101D)
 private val CardDark = Color(0xE6111E2F)
 private val TextMuted = Color(0xFFB8C4D6)
 
-private const val VERSION_DISPLAY = "0.1.2.0"
+private const val VERSION_DISPLAY = "0.1.3.0"
 private const val GITHUB_URL = "https://github.com/KaiEysselein/DataNudge"
 private const val GITHUB_LATEST_RELEASE_API =
     "https://api.github.com/repos/KaiEysselein/DataNudge/releases/latest"
@@ -180,8 +181,34 @@ private fun DataNudgeApp(
     hideApp: () -> Unit
 ) {
     val context = LocalContext.current
-    var currentScreen by remember { mutableStateOf(Screen.HOME) }
+    var navigationStack by remember {
+        mutableStateOf(listOf(Screen.HOME))
+    }
     var menuExpanded by remember { mutableStateOf(false) }
+
+    val currentScreen = navigationStack.last()
+
+    fun navigateTo(screen: Screen) {
+        menuExpanded = false
+
+        if (screen == Screen.HOME) {
+            navigationStack = listOf(Screen.HOME)
+        } else if (screen != currentScreen) {
+            navigationStack = navigationStack + screen
+        }
+    }
+
+    fun navigateBack() {
+        menuExpanded = false
+
+        if (navigationStack.size > 1) {
+            navigationStack = navigationStack.dropLast(1)
+        }
+    }
+
+    BackHandler(enabled = navigationStack.size > 1) {
+        navigateBack()
+    }
 
     Scaffold(
         containerColor = Color.Transparent,
@@ -190,11 +217,12 @@ private fun DataNudgeApp(
                 screen = currentScreen,
                 menuExpanded = menuExpanded,
                 onMenuExpandedChange = { menuExpanded = it },
-                onHome = { currentScreen = Screen.HOME },
-                onSettings = { currentScreen = Screen.SETTINGS },
-                onSetup = { currentScreen = Screen.SETUP },
-                onUpdates = { currentScreen = Screen.UPDATES },
-                onAbout = { currentScreen = Screen.ABOUT }
+                onBack = ::navigateBack,
+                onHome = { navigateTo(Screen.HOME) },
+                onSettings = { navigateTo(Screen.SETTINGS) },
+                onSetup = { navigateTo(Screen.SETUP) },
+                onUpdates = { navigateTo(Screen.UPDATES) },
+                onAbout = { navigateTo(Screen.ABOUT) }
             )
         }
     ) { innerPadding ->
@@ -215,31 +243,32 @@ private fun DataNudgeApp(
             when (currentScreen) {
                 Screen.HOME -> HomeScreen(
                     permissionRefreshKey = permissionRefreshKey,
-                    onOpenSetup = { currentScreen = Screen.SETUP },
-                    onOpenApps = { currentScreen = Screen.APPS },
-                    onOpenPermissions = { currentScreen = Screen.PERMISSIONS },
+                    onOpenSetup = { navigateTo(Screen.SETUP) },
+                    onOpenPermissions = {
+                        navigateTo(Screen.PERMISSIONS)
+                    },
                     hideApp = hideApp
                 )
 
                 Screen.SETUP -> SetupScreen(
                     permissionRefreshKey = permissionRefreshKey,
-                    onOpenApps = { currentScreen = Screen.APPS },
-                    onFinished = { currentScreen = Screen.HOME }
+                    onOpenApps = { navigateTo(Screen.APPS) },
+                    onFinished = { navigateTo(Screen.HOME) }
                 )
 
-                Screen.APPS -> AppsScreen(
-                    onBack = { currentScreen = Screen.SETTINGS }
-                )
+                Screen.APPS -> AppsScreen()
 
                 Screen.PERMISSIONS -> PermissionsScreen(
                     permissionRefreshKey = permissionRefreshKey
                 )
 
                 Screen.SETTINGS -> SettingsScreen(
-                    onApps = { currentScreen = Screen.APPS },
-                    onPermissions = { currentScreen = Screen.PERMISSIONS },
-                    onSetup = { currentScreen = Screen.SETUP },
-                    onAbout = { currentScreen = Screen.ABOUT }
+                    onApps = { navigateTo(Screen.APPS) },
+                    onPermissions = {
+                        navigateTo(Screen.PERMISSIONS)
+                    },
+                    onSetup = { navigateTo(Screen.SETUP) },
+                    onAbout = { navigateTo(Screen.ABOUT) }
                 )
 
                 Screen.UPDATES -> UpdatesScreen()
@@ -255,6 +284,7 @@ private fun DataNudgeTopBar(
     screen: Screen,
     menuExpanded: Boolean,
     onMenuExpandedChange: (Boolean) -> Unit,
+    onBack: () -> Unit,
     onHome: () -> Unit,
     onSettings: () -> Unit,
     onSetup: () -> Unit,
@@ -268,6 +298,23 @@ private fun DataNudgeTopBar(
             .padding(horizontal = 18.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
+        if (screen != Screen.HOME) {
+            Text(
+                text = "\u2190",
+                modifier = Modifier
+                    .clickable(onClick = onBack)
+                    .padding(
+                        start = 2.dp,
+                        end = 16.dp,
+                        top = 4.dp,
+                        bottom = 4.dp
+                    ),
+                color = Color.White,
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+
         Column(
             modifier = Modifier.weight(1f)
         ) {
@@ -346,7 +393,6 @@ private fun DataNudgeTopBar(
 private fun HomeScreen(
     permissionRefreshKey: Int,
     onOpenSetup: () -> Unit,
-    onOpenApps: () -> Unit,
     onOpenPermissions: () -> Unit,
     hideApp: () -> Unit
 ) {
@@ -518,26 +564,7 @@ private fun HomeScreen(
         }
 
         item {
-            QuickActionCard(
-                title = "Apps to monitor",
-                subtitle = "${selectedPackages.size} selected",
-                onClick = onOpenApps
-            )
-
-            Spacer(Modifier.height(10.dp))
-
-            QuickActionCard(
-                title = "Permissions",
-                subtitle =
-                    if (notificationGranted && usageGranted && overlayGranted) {
-                        "All required permissions granted"
-                    } else {
-                        "Action required"
-                    },
-                onClick = onOpenPermissions
-            )
-
-            Spacer(Modifier.height(18.dp))
+            Spacer(Modifier.height(2.dp))
 
             OutlinedButton(
                 onClick = hideApp,
@@ -1205,9 +1232,7 @@ private fun SetupStepCard(
 }
 
 @Composable
-private fun AppsScreen(
-    onBack: () -> Unit
-) {
+private fun AppsScreen() {
     val context = LocalContext.current
     var selectedPackages by remember {
         mutableStateOf(NetworkMonitorService.getSelectedPackages(context))
@@ -1304,16 +1329,6 @@ private fun AppsScreen(
         }
 
         item {
-            Spacer(Modifier.height(18.dp))
-
-            Button(
-                onClick = onBack,
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp)
-            ) {
-                Text("Done")
-            }
-
             Spacer(Modifier.height(28.dp))
         }
     }
@@ -2142,6 +2157,7 @@ private fun formatApproximateDataUsage(
 
     return "Approximately $value used since the connection changed"
 }
+
 
 
 

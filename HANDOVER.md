@@ -4,8 +4,8 @@
 **Repository:** `https://github.com/KaiEysselein/DataNudge`  
 **Local project path:** `D:\Github\DataNudge`  
 **Application ID:** `com.kaieysselein.datanudge`  
-**Current released version:** `0.1.2.0`  
-**Current GitHub release tag:** `v0.1.2.0`  
+**Current released version:** `0.1.3.0`  
+**Current GitHub release tag:** `v0.1.3.0`  
 **Licence:** GNU General Public License v3.0  
 **Last updated:** 1 August 2026
 
@@ -91,20 +91,20 @@ Responsibilities include:
 ### Version and code
 
 ```text
-Version name: 0.1.2.0
+Version name: 0.1.3.0
 Version code: 10001
 ```
 
 ### GitHub release
 
 ```text
-https://github.com/KaiEysselein/DataNudge/releases/tag/v0.1.2.0
+https://github.com/KaiEysselein/DataNudge/releases/tag/v0.1.3.0
 ```
 
 ### Direct APK
 
 ```text
-https://github.com/KaiEysselein/DataNudge/releases/download/v0.1.2.0/DataNudge-0.1.2.0.apk
+https://github.com/KaiEysselein/DataNudge/releases/download/v0.1.3.0/DataNudge-0.1.3.0.apk
 ```
 
 ### APK SHA-256
@@ -159,18 +159,18 @@ major.play-store-publication.feature.bug-fix
 Examples:
 
 ```text
-0.1.2.0  current release
-0.1.2.0  next bug-fix release
-0.1.2.0  next feature release
+0.1.3.0  current release
+0.1.3.0  next bug-fix release
+0.1.3.0  next feature release
 ```
 
 ## 8. Planned work
 
 Read `BUGS_AND_FEATURES.md`.
 
-The next planned bug-fix release is `0.1.2.0`.
+The next planned bug-fix release is `0.1.3.0`.
 
-The next planned feature release is `0.1.2.0`, which will add current connection duration.
+The next planned feature release is `0.1.3.0`, which will add current connection duration.
 
 ## 9. Build environment
 
@@ -296,6 +296,7 @@ Known issue: the decline action can be inaccessible on smaller screens. Keep the
 7. Inspect the app manually.
 8. Commit and push only after verification.
 9. Publish a new GitHub release only after increasing the version.
+
 
 
 

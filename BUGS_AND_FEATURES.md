@@ -4,7 +4,7 @@
 
 # DataNudge Bugs and Features
 
-**Current released version:** `0.1.2.0`  
+**Current released version:** `0.1.3.0`  
 **Next planned bug-fix version:** `0.1.0.2`  
 **Next planned feature version:** `0.1.1.0`  
 **Last updated:** 1 August 2026
@@ -118,4 +118,16 @@ Add a clearly visible `Close` button while retaining support for the Android bac
 - Added installed-version and latest-version reporting.
 - Added an Open download page action when a newer version is available.
 - The update checker does not download or install updates automatically.
+
+
+## Completed in 0.1.3.0
+
+- Removed Apps to monitor and Permissions from the Home screen.
+- Kept those functions available through Settings.
+- Added a top-left back arrow to every secondary screen.
+- Added an in-app navigation history.
+- Android Back now returns to the previous DataNudge screen.
+- Back from a nested page returns to its actual parent screen.
+- Removed the Apps screen Done button.
+- Back from Home retains normal Android behaviour and minimizes/exits the app.
 
