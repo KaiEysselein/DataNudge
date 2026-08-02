@@ -86,7 +86,7 @@ private val ScreenDark = Color(0xFF07101D)
 private val CardDark = Color(0xE6111E2F)
 private val TextMuted = Color(0xFFB8C4D6)
 
-private const val VERSION_DISPLAY = "0.1.4.1"
+private const val VERSION_DISPLAY = "0.1.4.2"
 private const val GITHUB_URL = "https://github.com/KaiEysselein/DataNudge"
 private const val GITHUB_LATEST_RELEASE_API =
     "https://api.github.com/repos/KaiEysselein/DataNudge/releases/latest"
@@ -270,8 +270,7 @@ private fun DataNudgeApp(
                     onPermissions = {
                         navigateTo(Screen.PERMISSIONS)
                     },
-                    onSetup = { navigateTo(Screen.SETUP) },
-                    onAbout = { navigateTo(Screen.ABOUT) }
+                    onSetup = { navigateTo(Screen.SETUP) }
                 )
 
                 Screen.UPDATES -> UpdatesScreen()
@@ -1496,8 +1495,7 @@ private fun PermissionsScreen(
 private fun SettingsScreen(
     onApps: () -> Unit,
     onPermissions: () -> Unit,
-    onSetup: () -> Unit,
-    onAbout: () -> Unit
+    onSetup: () -> Unit
 ) {
     LazyColumn(
         modifier = Modifier
@@ -1542,13 +1540,6 @@ private fun SettingsScreen(
                 onClick = onSetup
             )
 
-            Spacer(Modifier.height(10.dp))
-
-            SettingsRow(
-                title = "About DataNudge",
-                subtitle = VERSION_DISPLAY,
-                onClick = onAbout
-            )
 
             Spacer(Modifier.height(28.dp))
         }
@@ -1963,9 +1954,9 @@ private fun AboutScreen() {
 
         OutlinedButton(
             onClick = {
-                uriHandler.openUri(
-                    "https://kaieysselein.github.io/DataNudge/privacy.html"
-                )
+                (aboutContext as? android.app.Activity)?.let { activity ->
+                    showDataNudgePrivacyNotice(activity)
+                }
             },
             modifier = Modifier.padding(top = 10.dp),
             shape = RoundedCornerShape(14.dp)
@@ -2133,6 +2124,64 @@ private fun stopNetworkMonitorService(
 
     NetworkMonitorService.setMonitoringEnabled(context, false)
 }
+
+private val DATANUDGE_PRIVACY_TEXT = """
+DataNudge is designed to keep its operational information on your device.
+
+DataNudge stores app settings, disclaimer acceptance, monitoring preferences and the list of selected apps locally on the device.
+
+To provide app-specific reminders, DataNudge may read the list of launchable apps installed on the device and may use Android Usage Access to identify which app is currently in the foreground. DataNudge does not read the content of apps, messages, passwords, documents, photographs, calls or keystrokes.
+
+DataNudge checks the device's active network type and uses Android traffic counters to estimate device-wide data use during the current connection session. These estimates are processed on the device and may differ from mobile-network-provider billing.
+
+DataNudge uses notifications, a foreground service and, where enabled, display-over-other-apps access to show reminders. These functions depend on permissions granted by the user and Android device settings.
+
+DataNudge does not require an account and does not intentionally upload the selected-app list, usage history or connection-session data to the developer.
+
+When the user manually checks for updates, DataNudge contacts GitHub to read the latest published release information. Opening GitHub, downloading an APK, or opening an online legal-information page is handled by the user's browser or Android download system and is subject to those services' own privacy practices.
+
+Removing DataNudge normally removes its locally stored app data, subject to Android backup, restore and device-management behaviour.
+
+This notice describes the current DataNudge implementation. Future versions may require an updated privacy notice if their data handling changes.
+""".trimIndent()
+
+private fun showDataNudgePrivacyNotice(
+    activity: android.app.Activity
+) {
+    val container = android.widget.LinearLayout(activity).apply {
+        orientation = android.widget.LinearLayout.VERTICAL
+        val padding = (20 * resources.displayMetrics.density).toInt()
+        setPadding(padding, padding, padding, padding)
+    }
+
+    val body = android.widget.TextView(activity).apply {
+        text = DATANUDGE_PRIVACY_TEXT
+        textSize = 15f
+        setTextIsSelectable(true)
+    }
+
+    container.addView(body)
+
+    val scroll = android.widget.ScrollView(activity).apply {
+        addView(container)
+    }
+
+    android.app.AlertDialog.Builder(activity)
+        .setTitle("Privacy statement")
+        .setView(scroll)
+        .setCancelable(true)
+        .setPositiveButton("Close", null)
+        .setNeutralButton("Read online") { _, _ ->
+            val intent = android.content.Intent(
+                android.content.Intent.ACTION_VIEW,
+                android.net.Uri.parse(
+                    "https://kaieysselein.github.io/DataNudge/privacy.html"
+                )
+            )
+            activity.startActivity(intent)
+        }
+        .show()
+}
 private const val DISCLAIMER_VERSION = 1
 private const val DISCLAIMER_PREFERENCES = "datanudge_legal"
 private const val DISCLAIMER_ACCEPTED_VERSION = "accepted_disclaimer_version"
@@ -2294,6 +2343,7 @@ private fun formatApproximateDataUsage(
 
     return "Approximately $value used since the connection changed"
 }
+
 
 
 

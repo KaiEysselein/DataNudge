@@ -13,8 +13,8 @@ android {
         applicationId = "com.kaieysselein.datanudge"
         minSdk = 26
         targetSdk = 37
-        versionCode = 10401
-        versionName = "0.1.4.1"
+        versionCode = 10402
+        versionName = "0.1.4.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -52,6 +52,7 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
 }
+
 
 
 

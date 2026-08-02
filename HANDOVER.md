@@ -4,8 +4,8 @@
 **Repository:** `https://github.com/KaiEysselein/DataNudge`  
 **Local project path:** `D:\Github\DataNudge`  
 **Application ID:** `com.kaieysselein.datanudge`  
-**Current released version:** `0.1.4.1`  
-**Current GitHub release tag:** `v0.1.4.1`  
+**Current released version:** `0.1.4.2`  
+**Current GitHub release tag:** `v0.1.4.2`  
 **Licence:** GNU General Public License v3.0  
 **Last updated:** 1 August 2026
 
@@ -91,20 +91,20 @@ Responsibilities include:
 ### Version and code
 
 ```text
-Version name: 0.1.4.1
+Version name: 0.1.4.2
 Version code: 10001
 ```
 
 ### GitHub release
 
 ```text
-https://github.com/KaiEysselein/DataNudge/releases/tag/v0.1.4.1
+https://github.com/KaiEysselein/DataNudge/releases/tag/v0.1.4.2
 ```
 
 ### Direct APK
 
 ```text
-https://github.com/KaiEysselein/DataNudge/releases/download/v0.1.4.1/DataNudge-0.1.4.1.apk
+https://github.com/KaiEysselein/DataNudge/releases/download/v0.1.4.2/DataNudge-0.1.4.2.apk
 ```
 
 ### APK SHA-256
@@ -159,18 +159,18 @@ major.play-store-publication.feature.bug-fix
 Examples:
 
 ```text
-0.1.4.1  current release
-0.1.4.1  next bug-fix release
-0.1.4.1  next feature release
+0.1.4.2  current release
+0.1.4.2  next bug-fix release
+0.1.4.2  next feature release
 ```
 
 ## 8. Planned work
 
 Read `BUGS_AND_FEATURES.md`.
 
-The next planned bug-fix release is `0.1.4.1`.
+The next planned bug-fix release is `0.1.4.2`.
 
-The next planned feature release is `0.1.4.1`, which will add current connection duration.
+The next planned feature release is `0.1.4.2`, which will add current connection duration.
 
 ## 9. Build environment
 
@@ -319,4 +319,21 @@ immediately re-reads the active connection and the persisted connection
 session, recalculates approximate traffic usage, and refreshes monitoring
 state. The one-second UI refresh loop runs only while the Activity is
 resumed. Resuming must not reset the session baseline.
+
+
+
+## In-app privacy notice
+
+The About page opens the Privacy statement inside DataNudge using a
+scrollable Android dialog. The dialog includes a Read online action for
+the published privacy page. The Disclaimer notice uses the same general
+interaction pattern. Settings no longer duplicates the dedicated About
+menu item.
+
+## Resume refresh behaviour
+
+The Home screen refreshes its connection session immediately on
+ON_RESUME and once per second while the Activity is visible. The UI
+refresh loop pauses while the app is backgrounded and does not reset the
+persisted connection-session baseline.
 
