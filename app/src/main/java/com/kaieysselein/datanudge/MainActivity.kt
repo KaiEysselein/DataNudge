@@ -83,7 +83,7 @@ private val ScreenDark = Color(0xFF07101D)
 private val CardDark = Color(0xE6111E2F)
 private val TextMuted = Color(0xFFB8C4D6)
 
-private const val VERSION_DISPLAY = "0.1.3.0"
+private const val VERSION_DISPLAY = "0.1.4.0"
 private const val GITHUB_URL = "https://github.com/KaiEysselein/DataNudge"
 private const val GITHUB_LATEST_RELEASE_API =
     "https://api.github.com/repos/KaiEysselein/DataNudge/releases/latest"
@@ -546,7 +546,6 @@ private fun HomeScreen(
                         bytes = connectionSession.approximateUsedBytes
                     ),
                 monitoringEnabled = monitoringEnabled,
-                selectedAppCount = selectedPackages.size,
                 onToggleMonitoring = {
                     if (monitoringEnabled) {
                         stopNetworkMonitorService(context)
@@ -571,8 +570,18 @@ private fun HomeScreen(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp)
             ) {
-                Text("Close app - keep monitoring", color = Color.White)
+                Text("Hide DataNudge", color = Color.White)
             }
+
+            Text(
+                text = "Monitoring will continue in the background.",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp),
+                color = TextMuted,
+                fontSize = 12.sp,
+                textAlign = TextAlign.Center
+            )
 
             Spacer(Modifier.height(28.dp))
         }
@@ -638,7 +647,6 @@ private fun ConnectionCard(
     connectedForText: String,
     approximateUsageText: String,
     monitoringEnabled: Boolean,
-    selectedAppCount: Int,
     onToggleMonitoring: () -> Unit
 ) {
     Card(
@@ -708,12 +716,6 @@ private fun ConnectionCard(
                 )
             }
 
-            Text(
-                text = "$selectedAppCount monitored app${if (selectedAppCount == 1) "" else "s"}",
-                modifier = Modifier.padding(top = 8.dp),
-                color = TextMuted,
-                fontSize = 13.sp
-            )
 
             Button(
                 onClick = onToggleMonitoring,
@@ -1506,6 +1508,7 @@ private fun SettingsRow(
 private data class UpdateCheckResult(
     val latestVersion: String?,
     val releaseUrl: String?,
+    val apkDownloadUrl: String?,
     val errorMessage: String?
 )
 
@@ -1520,6 +1523,7 @@ private fun UpdatesScreen() {
             UpdateCheckResult(
                 latestVersion = null,
                 releaseUrl = null,
+                apkDownloadUrl = null,
                 errorMessage = null
             )
         )
@@ -1624,10 +1628,11 @@ private fun UpdatesScreen() {
 
                             Button(
                                 onClick = {
-                                    result.releaseUrl?.let(
+                                    result.apkDownloadUrl?.let(
                                         uriHandler::openUri
                                     )
                                 },
+                                enabled = result.apkDownloadUrl != null,
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(top = 18.dp),
@@ -1635,8 +1640,28 @@ private fun UpdatesScreen() {
                                     containerColor = DataBlue
                                 )
                             ) {
-                                Text("Open download page")
+                                Text(
+                                    if (result.apkDownloadUrl != null) {
+                                        "Download APK"
+                                    } else {
+                                        "APK unavailable"
+                                    }
+                                )
                             }
+
+                            Text(
+                                text = "View release information",
+                                modifier = Modifier
+                                    .padding(top = 14.dp)
+                                    .clickable {
+                                        result.releaseUrl?.let(
+                                            uriHandler::openUri
+                                        )
+                                    },
+                                color = DataBlue,
+                                fontWeight = FontWeight.Bold,
+                                textAlign = TextAlign.Center
+                            )
                         }
 
                         else -> {
@@ -1717,6 +1742,7 @@ private suspend fun checkForDataNudgeUpdate(): UpdateCheckResult {
                 return@withContext UpdateCheckResult(
                     latestVersion = null,
                     releaseUrl = null,
+                    apkDownloadUrl = null,
                     errorMessage =
                         "Update check failed. GitHub returned " +
                             "$responseCode."
@@ -1735,6 +1761,24 @@ private suspend fun checkForDataNudgeUpdate(): UpdateCheckResult {
                     .removePrefix("v")
                     .trim()
 
+            val assets = response.optJSONArray("assets")
+            var apkDownloadUrl: String? = null
+
+            if (assets != null) {
+                for (index in 0 until assets.length()) {
+                    val asset = assets.optJSONObject(index) ?: continue
+                    val assetName = asset.optString("name")
+
+                    if (assetName.endsWith(".apk", ignoreCase = true)) {
+                        apkDownloadUrl =
+                            asset
+                                .optString("browser_download_url")
+                                .ifBlank { null }
+                        break
+                    }
+                }
+            }
+
             UpdateCheckResult(
                 latestVersion =
                     latestVersion.ifBlank { null },
@@ -1742,12 +1786,14 @@ private suspend fun checkForDataNudgeUpdate(): UpdateCheckResult {
                     response
                         .optString("html_url")
                         .ifBlank { null },
+                apkDownloadUrl = apkDownloadUrl,
                 errorMessage = null
             )
         } catch (_: Exception) {
             UpdateCheckResult(
                 latestVersion = null,
                 releaseUrl = null,
+                apkDownloadUrl = null,
                 errorMessage =
                     "Could not check for updates. Check your " +
                         "internet connection and try again."
@@ -2157,6 +2203,8 @@ private fun formatApproximateDataUsage(
 
     return "Approximately $value used since the connection changed"
 }
+
+
 
 
 

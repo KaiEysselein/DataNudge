@@ -4,7 +4,7 @@
 
 # DataNudge Bugs and Features
 
-**Current released version:** `0.1.3.0`  
+**Current released version:** `0.1.4.0`  
 **Next planned bug-fix version:** `0.1.0.2`  
 **Next planned feature version:** `0.1.1.0`  
 **Last updated:** 1 August 2026
@@ -130,4 +130,16 @@ Add a clearly visible `Close` button while retaining support for the Android bac
 - Back from a nested page returns to its actual parent screen.
 - Removed the Apps screen Done button.
 - Back from Home retains normal Android behaviour and minimizes/exits the app.
+
+
+## Completed in 0.1.4.0
+
+- Added a direct Download APK button to the Updates page.
+- The button uses the APK asset URL from the latest GitHub release.
+- Added a secondary View release information action.
+- The app still does not download or install updates silently.
+- Renamed Close app - keep monitoring to Hide DataNudge.
+- Added the supporting text Monitoring will continue in the background.
+- Removed the monitored-app count from the Home connection card.
+- The selected-app count remains available under Settings.
 
