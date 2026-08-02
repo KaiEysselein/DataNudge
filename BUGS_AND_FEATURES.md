@@ -4,7 +4,7 @@
 
 # DataNudge Bugs and Features
 
-**Current released version:** `0.1.5.0`  
+**Current released version:** `0.2.0.0`  
 **Next planned bug-fix version:** `0.1.0.2`  
 **Next planned feature version:** `0.1.1.0`  
 **Last updated:** 1 August 2026
@@ -191,4 +191,16 @@ Add a clearly visible `Close` button while retaining support for the Android bac
 - Handles Android's per-app Install unknown apps permission.
 - Installation still requires explicit Android user confirmation.
 - Automatic checking is intended for the GitHub/testing build; a future Play build should use Play-managed updates.
+
+
+## Completed in 0.2.0.0
+
+- Added a separate Installed apps option under Settings.
+- Added a read-only Installed apps page.
+- The page is populated from apps that can normally be launched on the phone.
+- Apps are sorted alphabetically.
+- Each row shows the app icon, display name and package name.
+- Added loading, empty-list and error states.
+- Existing Apps to monitor behaviour remains unchanged.
+- Hidden Android system components are intentionally excluded.
 

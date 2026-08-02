@@ -4,8 +4,8 @@
 **Repository:** `https://github.com/KaiEysselein/DataNudge`  
 **Local project path:** `D:\Github\DataNudge`  
 **Application ID:** `com.kaieysselein.datanudge`  
-**Current released version:** `0.1.5.0`  
-**Current GitHub release tag:** `v0.1.5.0`  
+**Current released version:** `0.2.0.0`  
+**Current GitHub release tag:** `v0.2.0.0`  
 **Licence:** GNU General Public License v3.0  
 **Last updated:** 1 August 2026
 
@@ -91,20 +91,20 @@ Responsibilities include:
 ### Version and code
 
 ```text
-Version name: 0.1.5.0
+Version name: 0.2.0.0
 Version code: 10001
 ```
 
 ### GitHub release
 
 ```text
-https://github.com/KaiEysselein/DataNudge/releases/tag/v0.1.5.0
+https://github.com/KaiEysselein/DataNudge/releases/tag/v0.2.0.0
 ```
 
 ### Direct APK
 
 ```text
-https://github.com/KaiEysselein/DataNudge/releases/download/v0.1.5.0/DataNudge-0.1.5.0.apk
+https://github.com/KaiEysselein/DataNudge/releases/download/v0.2.0.0/DataNudge-0.2.0.0.apk
 ```
 
 ### APK SHA-256
@@ -159,18 +159,18 @@ major.play-store-publication.feature.bug-fix
 Examples:
 
 ```text
-0.1.5.0  current release
-0.1.5.0  next bug-fix release
-0.1.5.0  next feature release
+0.2.0.0  current release
+0.2.0.0  next bug-fix release
+0.2.0.0  next feature release
 ```
 
 ## 8. Planned work
 
 Read `BUGS_AND_FEATURES.md`.
 
-The next planned bug-fix release is `0.1.5.0`.
+The next planned bug-fix release is `0.2.0.0`.
 
-The next planned feature release is `0.1.5.0`, which will add current connection duration.
+The next planned feature release is `0.2.0.0`, which will add current connection duration.
 
 ## 9. Build environment
 
@@ -353,4 +353,16 @@ asset SHA-256 digest when supplied, expose the file through FileProvider,
 and open Android's installer. Android user confirmation remains
 mandatory. A future Google Play build should disable this GitHub
 installation path and use Play-managed updates.
+
+
+
+## Installed apps page
+
+Version 0.2.0.0 adds a read-only Installed apps page under Settings.
+It uses Android LauncherApps.getActivityList() for the current user,
+groups multiple launcher activities by package, and displays one
+alphabetically sorted row per launchable package. Each row contains the
+badged launcher icon, label and package name. This is deliberately not a
+complete list of hidden system packages and it does not yet change the
+existing monitoring selection model.
 
