@@ -1,9 +1,9 @@
 ﻿# DataNudge
 
 <p align="center">
-  <a href="https://github.com/KaiEysselein/DataNudge/releases/download/v0.2.1.0/DataNudge-0.2.1.0.apk"><strong>Download DataNudge 0.2.1.0 APK</strong></a>
+  <a href="https://github.com/KaiEysselein/DataNudge/releases/download/v0.2.3.1/DataNudge-0.2.3.1.apk"><strong>Download DataNudge 0.2.1.0 APK</strong></a>
   &nbsp;|&nbsp;
-  <a href="https://github.com/KaiEysselein/DataNudge/releases/tag/v0.2.1.0">View release details</a>
+  <a href="https://github.com/KaiEysselein/DataNudge/releases/tag/v0.2.3.1">View release details</a>
 </p>
 
 > **Android installation:** Download the APK, open it on your phone, and choose **Update** or **Install**. Android may ask you to allow installation from your browser or file manager.
@@ -109,6 +109,7 @@ The current development backlog and project handover notes are maintained in:
 
 The next planned maintenance release is `0.2.1.0`.  
 The next planned feature release is `0.2.1.0`.
+
 
 
 

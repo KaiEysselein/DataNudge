@@ -4,10 +4,10 @@
 **Repository:** `https://github.com/KaiEysselein/DataNudge`  
 **Local project path:** `D:\Github\DataNudge`  
 **Application ID:** `com.kaieysselein.datanudge`  
-**Current released version:** `0.2.1.0`  
-**Current GitHub release tag:** `v0.2.1.0`  
+**Current released version:** `0.2.3.1`  
+**Current GitHub release tag:** `v0.2.3.1`  
 **Licence:** GNU General Public License v3.0  
-**Last updated:** 1 August 2026
+**Last updated:** 2 August 2026
 
 ## 1. Purpose
 
@@ -76,7 +76,7 @@ Responsibilities include:
 - Ongoing status notification
 - Connection-specific shield icons
 - User-selected monitored apps
-- Curated list of common high-data apps
+- Installed launchable-app list with user-selectable monitoring
 - Overlay warning when a selected app opens on mobile data
 - Sound and vibration on connection changes
 - Start monitoring after reboot
@@ -91,26 +91,26 @@ Responsibilities include:
 ### Version and code
 
 ```text
-Version name: 0.2.1.0
-Version code: 10001
+Version name: 0.2.3.1
+Version code: 20301
 ```
 
 ### GitHub release
 
 ```text
-https://github.com/KaiEysselein/DataNudge/releases/tag/v0.2.1.0
+https://github.com/KaiEysselein/DataNudge/releases/tag/v0.2.3.1
 ```
 
 ### Direct APK
 
 ```text
-https://github.com/KaiEysselein/DataNudge/releases/download/v0.2.1.0/DataNudge-0.2.1.0.apk
+https://github.com/KaiEysselein/DataNudge/releases/download/v0.2.3.1/DataNudge-0.2.3.1.apk
 ```
 
 ### APK SHA-256
 
 ```text
-C98A0F329915BD4AAEAC39684A45636AC9277BEBF8062B064C54408927FE7E4A
+F90A001F8649BAB4277A8A9A56D8898C78503BD8F28800EC2A56D465BDEEE4B4
 ```
 
 ### Signing status
@@ -159,18 +159,18 @@ major.play-store-publication.feature.bug-fix
 Examples:
 
 ```text
-0.2.1.0  current release
-0.2.1.0  next bug-fix release
-0.2.1.0  next feature release
+0.2.3.1  current release
+0.2.3.2  next bug-fix release
+0.2.4.0  next feature release
 ```
 
 ## 8. Planned work
 
 Read `BUGS_AND_FEATURES.md`.
 
-The next planned bug-fix release is `0.2.1.0`.
+The next planned bug-fix release is `0.2.3.2`.
 
-The next planned feature release is `0.2.1.0`, which will add current connection duration.
+The next planned feature release is `0.2.4.0`.
 
 ## 9. Build environment
 
@@ -409,4 +409,17 @@ https://chat.whatsapp.com/Ctgh4hsvs1iD2K06qsedSc
 
 It prefers WhatsApp or WhatsApp Business and falls back to the default
 browser or another registered link handler.
+
+
+## 13. Current 0.2.3.1 functionality
+
+- Material 3 pull-to-refresh on the Home screen.
+- Visible refresh indicator without resetting the active connection session.
+- Installed-app-based monitoring selection.
+- Automatic update checks and in-app APK download/install flow.
+- Persistent permission review actions.
+- Share DataNudge via WhatsApp.
+- Join the DataNudge WhatsApp group.
+- GitHub Pages automatically resolves the latest release APK.
+- Transparent website logo stored under docs/assets.
 

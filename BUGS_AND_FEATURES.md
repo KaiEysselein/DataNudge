@@ -4,10 +4,10 @@
 
 # DataNudge Bugs and Features
 
-**Current released version:** `0.2.2.0`  
-**Next planned bug-fix version:** `0.1.0.2`  
-**Next planned feature version:** `0.1.1.0`  
-**Last updated:** 1 August 2026
+**Current released version:** `0.2.3.1`  
+**Next planned bug-fix version:** `0.2.3.2`  
+**Next planned feature version:** `0.2.4.0`  
+**Last updated:** 2 August 2026
 
 ## Versioning convention
 
@@ -235,4 +235,22 @@ Add a clearly visible `Close` button while retaining support for the Android bac
 - Sharing falls back to Android's normal share chooser.
 - Opening the group falls back to the browser.
 - About is now scrollable to accommodate the additional actions.
+
+
+## Completed in 0.2.3.0
+
+- Replaced the unreliable custom swipe implementation with Material 3 pull-to-refresh on Home.
+- Added a visible refresh indicator.
+- Kept the active connection session and traffic baseline intact during refresh.
+- Reduced and top-aligned the Automatic update checks switch.
+- Improved text spacing and wrapping in the update-check card.
+
+## Completed in 0.2.3.1
+
+- Added Share DataNudge via WhatsApp to About.
+- Added Join the DataNudge WhatsApp group to About.
+- Added support for WhatsApp Business and Android/browser fallbacks.
+- Updated GitHub Pages to use the current APK as a static fallback.
+- Added automatic lookup of the latest GitHub release on the website.
+- Added the transparent DataNudge logo to website assets.
 
