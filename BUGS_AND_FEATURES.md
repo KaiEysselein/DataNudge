@@ -1,12 +1,8 @@
-﻿## Completed in 0.1.0.2
-
-- Corrected the `für Lena` text colour so it matches the version number.
-
 # DataNudge Bugs and Features
 
-**Current released version:** `0.2.3.1`  
-**Next planned bug-fix version:** `0.2.3.2`  
-**Next planned feature version:** `0.2.4.0`  
+**Current released version:** `0.2.3.1`
+**Next planned bug-fix version:** `0.2.3.2`
+**Next planned feature version:** `0.2.4.0`
 **Last updated:** 2 August 2026
 
 ## Versioning convention
@@ -22,14 +18,14 @@ major.play-store-publication.feature.bug-fix
 - The third number increases for feature releases.
 - The fourth number increases for bug-fix releases.
 
-## Planned bug fixes for 0.1.0.2
+## Open issues and planned work
 
 ### Disclaimer action buttons on smaller screens
 
-**Current behaviour:**  
+**Current behaviour:**
 The mandatory disclaimer text scrolls, but the `Decline and exit` action can sit too low and become inaccessible on smaller screens.
 
-**Required change:**  
+**Required change:**
 Keep the action area permanently visible while only the disclaimer body scrolls.
 
 The following actions must always remain accessible:
@@ -39,10 +35,10 @@ The following actions must always remain accessible:
 
 ### Mobile-data alert redesign
 
-**Current behaviour:**  
+**Current behaviour:**
 The alert shown when a monitored app such as YouTube opens on mobile data needs improvement.
 
-**Required change:**  
+**Required change:**
 Review and redesign the wording, layout, visual hierarchy, size, positioning, button behaviour, duration and repeat frequency.
 
 The redesigned alert should:
@@ -56,10 +52,10 @@ The redesigned alert should:
 
 ### Move configuration items into Settings
 
-**Current behaviour:**  
+**Current behaviour:**
 Permissions and monitored-app selection are presented too prominently on the main screen.
 
-**Required change:**  
+**Required change:**
 Move the following items into the top-right Settings area:
 
 - Permissions
@@ -74,18 +70,18 @@ The home screen should remain focused on:
 
 ### Launcher icon appears too small
 
-**Current behaviour:**  
+**Current behaviour:**
 The launcher icon has too much transparent padding and appears smaller than neighbouring Android app icons.
 
-**Required change:**  
+**Required change:**
 Increase the shield artwork within the adaptive-icon safe area and reduce unnecessary transparent padding without allowing clipping on common launcher shapes.
 
 ### About page needs a Close button
 
-**Current behaviour:**  
+**Current behaviour:**
 The About page has no obvious visible close action.
 
-**Required change:**  
+**Required change:**
 Add a clearly visible `Close` button while retaining support for the Android back gesture or back button.
 
 ## Completed in 0.1.0.1
@@ -97,6 +93,11 @@ Add a clearly visible `Close` button while retaining support for the Android bac
 - Added wording covering battery and device-resource use.
 - Added explicit user responsibility for connection checking, data use, battery level and resulting charges.
 - Published a downloadable GitHub APK release.
+
+
+## Completed in 0.1.0.2
+
+- Corrected the `für Lena` text colour so it matches the version number.
 
 
 ## Completed in 0.1.1.0
@@ -227,16 +228,6 @@ Add a clearly visible `Close` button while retaining support for the Android bac
 - Added direct access to Android notification, usage-access and overlay settings for reviewing or changing permissions.
 
 
-## WhatsApp sharing and group access
-
-- Added Share DataNudge via WhatsApp to About.
-- Added Join the DataNudge WhatsApp group to About.
-- WhatsApp Business is supported as an alternative package.
-- Sharing falls back to Android's normal share chooser.
-- Opening the group falls back to the browser.
-- About is now scrollable to accommodate the additional actions.
-
-
 ## Completed in 0.2.3.0
 
 - Replaced the unreliable custom swipe implementation with Material 3 pull-to-refresh on Home.
@@ -253,4 +244,3 @@ Add a clearly visible `Close` button while retaining support for the Android bac
 - Updated GitHub Pages to use the current APK as a static fallback.
 - Added automatic lookup of the latest GitHub release on the website.
 - Added the transparent DataNudge logo to website assets.
-
