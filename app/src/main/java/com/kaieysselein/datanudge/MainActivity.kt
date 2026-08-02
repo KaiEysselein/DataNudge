@@ -1,4 +1,4 @@
-﻿package com.kaieysselein.datanudge
+package com.kaieysselein.datanudge
 
 import android.Manifest
 import android.app.AppOpsManager
@@ -23,7 +23,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -44,10 +43,12 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
@@ -64,9 +65,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.platform.LocalUriHandler
@@ -97,7 +98,7 @@ private val ScreenDark = Color(0xFF07101D)
 private val CardDark = Color(0xE6111E2F)
 private val TextMuted = Color(0xFFB8C4D6)
 
-private const val VERSION_DISPLAY = "0.2.2.0"
+private const val VERSION_DISPLAY = "0.2.3.0"
 private const val GITHUB_URL = "https://github.com/KaiEysselein/DataNudge"
 private const val GITHUB_LATEST_RELEASE_API =
     "https://api.github.com/repos/KaiEysselein/DataNudge/releases/latest"
@@ -440,6 +441,7 @@ private fun DataNudgeTopBar(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun HomeScreen(
     permissionRefreshKey: Int,
@@ -475,9 +477,11 @@ private fun HomeScreen(
         mutableStateOf(NetworkMonitorService.isMonitoringEnabled(context))
     }
 
-    var swipeDistance by remember {
-        mutableStateOf(0f)
+    var isRefreshing by remember {
+        mutableStateOf(false)
     }
+
+    val homeCoroutineScope = rememberCoroutineScope()
 
     fun refreshHomeContent() {
         val refreshedStatus =
@@ -635,72 +639,27 @@ private fun HomeScreen(
         }
     }
 
-    LazyColumn(
-        modifier = Modifier
-                        .fillMaxSize()
-            .pointerInput(Unit) {
-                detectVerticalDragGestures(
-                    onDragStart = {
-                        swipeDistance = 0f
-                    },
-                    onVerticalDrag = { _, dragAmount ->
-                        swipeDistance += dragAmount
-                    },
-                    onDragEnd = {
-                        if (swipeDistance <= -120f) {
-                            refreshHomeContent()
-                        }
+    PullToRefreshBox(
+        isRefreshing = isRefreshing,
+        onRefresh = {
+            if (!isRefreshing) {
+                isRefreshing = true
+                refreshHomeContent()
 
-                        swipeDistance = 0f
-                    },
-                    onDragCancel = {
-                        swipeDistance = 0f
-                    }
-                )
+                homeCoroutineScope.launch {
+                    kotlinx.coroutines.delay(550L)
+                    isRefreshing = false
+                }
             }
-            .pointerInput(Unit) {
-                detectVerticalDragGestures(
-                    onDragStart = {
-                        swipeDistance = 0f
-                    },
-                    onVerticalDrag = { _, dragAmount ->
-                        swipeDistance += dragAmount
-                    },
-                    onDragEnd = {
-                        if (swipeDistance <= -120f) {
-                            refreshHomeContent()
-                        }
-
-                        swipeDistance = 0f
-                    },
-                    onDragCancel = {
-                        swipeDistance = 0f
-                    }
-                )
-            }
-            .pointerInput(Unit) {
-                detectVerticalDragGestures(
-                    onDragStart = {
-                        swipeDistance = 0f
-                    },
-                    onVerticalDrag = { _, dragAmount ->
-                        swipeDistance += dragAmount
-                    },
-                    onDragEnd = {
-                        if (swipeDistance <= -120f) {
-                            refreshHomeContent()
-                        }
-
-                        swipeDistance = 0f
-                    },
-                    onDragCancel = {
-                        swipeDistance = 0f
-                    }
-                )
-            }
-            .padding(horizontal = 20.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+        },
+        modifier = Modifier.fillMaxSize()
     ) {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
         item {
             Spacer(Modifier.height(20.dp))
 
@@ -713,7 +672,12 @@ private fun HomeScreen(
             Spacer(Modifier.height(8.dp))
 
             Text(
-                text = "Swipe up to refresh",
+                text =
+                    if (isRefreshing) {
+                        "Refreshing..."
+                    } else {
+                        "Pull down to refresh"
+                    },
                 color = TextMuted,
                 fontSize = 12.sp
             )
@@ -784,6 +748,7 @@ private fun HomeScreen(
 
             Spacer(Modifier.height(28.dp))
         }
+    }
     }
 }
 
@@ -1945,12 +1910,20 @@ private fun SettingsScreen(
                 )
             ) {
                 Row(
-                    modifier = Modifier.padding(16.dp),
-                    verticalAlignment =
-                        Alignment.CenterVertically
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(
+                            start = 16.dp,
+                            top = 16.dp,
+                            end = 12.dp,
+                            bottom = 16.dp
+                        ),
+                    verticalAlignment = Alignment.Top
                 ) {
                     Column(
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(end = 12.dp)
                     ) {
                         Text(
                             text = "Automatic update checks",
@@ -1977,7 +1950,8 @@ private fun SettingsScreen(
                                 context = context,
                                 enabled = enabled
                             )
-                        }
+                        },
+                        modifier = Modifier.scale(0.78f)
                     )
                 }
             }
