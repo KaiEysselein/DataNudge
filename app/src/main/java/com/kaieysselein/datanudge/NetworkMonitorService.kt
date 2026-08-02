@@ -28,6 +28,7 @@ import android.view.Gravity
 import android.view.View
 import android.view.WindowManager
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.annotation.DrawableRes
@@ -291,20 +292,75 @@ class NetworkMonitorService : Service() {
             }
         }
 
+        val logo = ImageView(this).apply {
+            setImageDrawable(
+                applicationInfo.loadIcon(packageManager)
+            )
+            adjustViewBounds = true
+            scaleType = ImageView.ScaleType.FIT_CENTER
+        }
+
         val title = TextView(this).apply {
             text = "Mobile data reminder"
             setTextColor(Color.WHITE)
             textSize = 21f
             setTypeface(typeface, Typeface.BOLD)
-            gravity = Gravity.CENTER
+            gravity = Gravity.START
         }
 
         val message = TextView(this).apply {
-            text = "$appLabel is open while your phone is using mobile data."
+            text =
+                "$appLabel is open while your phone is " +
+                    "using mobile data."
             setTextColor(Color.rgb(220, 231, 242))
             textSize = 16f
-            gravity = Gravity.CENTER
-            setPadding(0, dp(12), 0, dp(18))
+            gravity = Gravity.START
+            setPadding(0, dp(7), 0, 0)
+        }
+
+        val textColumn = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = Gravity.CENTER_VERTICAL
+
+            addView(
+                title,
+                LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                )
+            )
+
+            addView(
+                message,
+                LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                )
+            )
+        }
+
+        val alertHeader = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+
+            addView(
+                logo,
+                LinearLayout.LayoutParams(
+                    dp(52),
+                    dp(52)
+                ).apply {
+                    marginEnd = dp(14)
+                }
+            )
+
+            addView(
+                textColumn,
+                LinearLayout.LayoutParams(
+                    0,
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    1f
+                )
+            )
         }
 
         val okButton = Button(this).apply {
@@ -322,15 +378,7 @@ class NetworkMonitorService : Service() {
         }
 
         container.addView(
-            title,
-            LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-            )
-        )
-
-        container.addView(
-            message,
+            alertHeader,
             LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
@@ -341,8 +389,10 @@ class NetworkMonitorService : Service() {
             okButton,
             LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
-                dp(52)
-            )
+                dp(50)
+            ).apply {
+                topMargin = dp(18)
+            }
         )
 
         val params =
@@ -670,4 +720,5 @@ fun describeNetworkCapabilities(
             "Other connection"
     }
 }
+
 

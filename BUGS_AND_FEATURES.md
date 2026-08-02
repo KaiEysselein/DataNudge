@@ -4,7 +4,7 @@
 
 # DataNudge Bugs and Features
 
-**Current released version:** `0.1.1.0`  
+**Current released version:** `0.1.2.0`  
 **Next planned bug-fix version:** `0.1.0.2`  
 **Next planned feature version:** `0.1.1.0`  
 **Last updated:** 1 August 2026
@@ -107,4 +107,15 @@ Add a clearly visible `Close` button while retaining support for the Android bac
 - Reset the connection session when the effective connection type changes.
 - Added safe handling for device reboot, unsupported counters and counter resets.
 - Labelled usage as approximate because Android traffic counters may differ from provider billing.
+
+
+## Completed in 0.1.2.0
+
+- Added the DataNudge logo to the left side of the mobile-data reminder.
+- Reworked the reminder header to use horizontal space more efficiently.
+- Added an Updates option to the top-right menu.
+- Added a manual GitHub latest-release check.
+- Added installed-version and latest-version reporting.
+- Added an Open download page action when a newer version is available.
+- The update checker does not download or install updates automatically.
 

@@ -68,6 +68,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import com.kaieysselein.datanudge.ui.theme.DataNudgeTheme
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import org.json.JSONObject
+import java.net.HttpURLConnection
+import java.net.URL
 
 private val DataBlue = Color(0xFF0878F9)
 private val DataGreen = Color(0xFF20C94B)
@@ -77,8 +82,10 @@ private val ScreenDark = Color(0xFF07101D)
 private val CardDark = Color(0xE6111E2F)
 private val TextMuted = Color(0xFFB8C4D6)
 
-private const val VERSION_DISPLAY = "0.1.1.0"
+private const val VERSION_DISPLAY = "0.1.2.0"
 private const val GITHUB_URL = "https://github.com/KaiEysselein/DataNudge"
+private const val GITHUB_LATEST_RELEASE_API =
+    "https://api.github.com/repos/KaiEysselein/DataNudge/releases/latest"
 private const val UI_PREFERENCES = "datanudge_ui_preferences"
 private const val KEY_SETUP_COMPLETED = "setup_completed"
 
@@ -123,6 +130,7 @@ private enum class Screen {
     APPS,
     PERMISSIONS,
     SETTINGS,
+    UPDATES,
     ABOUT
 }
 
@@ -185,6 +193,7 @@ private fun DataNudgeApp(
                 onHome = { currentScreen = Screen.HOME },
                 onSettings = { currentScreen = Screen.SETTINGS },
                 onSetup = { currentScreen = Screen.SETUP },
+                onUpdates = { currentScreen = Screen.UPDATES },
                 onAbout = { currentScreen = Screen.ABOUT }
             )
         }
@@ -233,6 +242,8 @@ private fun DataNudgeApp(
                     onAbout = { currentScreen = Screen.ABOUT }
                 )
 
+                Screen.UPDATES -> UpdatesScreen()
+
                 Screen.ABOUT -> AboutScreen()
             }
         }
@@ -247,6 +258,7 @@ private fun DataNudgeTopBar(
     onHome: () -> Unit,
     onSettings: () -> Unit,
     onSetup: () -> Unit,
+    onUpdates: () -> Unit,
     onAbout: () -> Unit
 ) {
     Row(
@@ -309,6 +321,13 @@ private fun DataNudgeTopBar(
                     onClick = {
                         onMenuExpandedChange(false)
                         onSetup()
+                    }
+                )
+                DropdownMenuItem(
+                    text = { Text("Updates") },
+                    onClick = {
+                        onMenuExpandedChange(false)
+                        onUpdates()
                     }
                 )
                 DropdownMenuItem(
@@ -1468,6 +1487,298 @@ private fun SettingsRow(
     )
 }
 
+
+private data class UpdateCheckResult(
+    val latestVersion: String?,
+    val releaseUrl: String?,
+    val errorMessage: String?
+)
+
+@Composable
+private fun UpdatesScreen() {
+    val uriHandler = LocalUriHandler.current
+
+    var checking by remember { mutableStateOf(true) }
+    var refreshKey by remember { mutableIntStateOf(0) }
+    var result by remember {
+        mutableStateOf(
+            UpdateCheckResult(
+                latestVersion = null,
+                releaseUrl = null,
+                errorMessage = null
+            )
+        )
+    }
+
+    LaunchedEffect(refreshKey) {
+        checking = true
+        result = checkForDataNudgeUpdate()
+        checking = false
+    }
+
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 20.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        item {
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Image(
+                painter = painterResource(R.mipmap.datanudge_icon),
+                contentDescription = "DataNudge logo",
+                modifier = Modifier.size(92.dp)
+            )
+
+            Text(
+                text = "Updates",
+                modifier = Modifier.padding(top = 14.dp),
+                color = Color.White,
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold
+            )
+
+            Text(
+                text = "Installed version: $VERSION_DISPLAY",
+                modifier = Modifier.padding(top = 7.dp),
+                color = TextMuted,
+                fontSize = 15.sp
+            )
+
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 22.dp),
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = CardDark
+                )
+            ) {
+                Column(
+                    modifier = Modifier.padding(20.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    when {
+                        checking -> {
+                            Text(
+                                text =
+                                    "Checking GitHub for the latest " +
+                                        "DataNudge release...",
+                                color = Color.White,
+                                textAlign = TextAlign.Center
+                            )
+                        }
+
+                        result.errorMessage != null -> {
+                            Text(
+                                text = result.errorMessage ?: "Update check failed.",
+                                color = DataOrange,
+                                textAlign = TextAlign.Center
+                            )
+                        }
+
+                        result.latestVersion == null -> {
+                            Text(
+                                text = "No published release was found.",
+                                color = TextMuted,
+                                textAlign = TextAlign.Center
+                            )
+                        }
+
+                        isNewerVersion(
+                            candidate = result.latestVersion ?: VERSION_DISPLAY,
+                            current = VERSION_DISPLAY
+                        ) -> {
+                            Text(
+                                text = "A newer version is available",
+                                color = DataGreen,
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.Bold,
+                                textAlign = TextAlign.Center
+                            )
+
+                            Text(
+                                text =
+                                    "Latest version: " +
+                                        result.latestVersion,
+                                modifier = Modifier.padding(top = 8.dp),
+                                color = Color.White,
+                                textAlign = TextAlign.Center
+                            )
+
+                            Button(
+                                onClick = {
+                                    result.releaseUrl?.let(
+                                        uriHandler::openUri
+                                    )
+                                },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 18.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = DataBlue
+                                )
+                            ) {
+                                Text("Open download page")
+                            }
+                        }
+
+                        else -> {
+                            Text(
+                                text = "DataNudge is up to date",
+                                color = DataGreen,
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.Bold,
+                                textAlign = TextAlign.Center
+                            )
+
+                            Text(
+                                text =
+                                    "Latest version: " +
+                                        result.latestVersion,
+                                modifier = Modifier.padding(top = 8.dp),
+                                color = TextMuted,
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
+                }
+            }
+
+            OutlinedButton(
+                onClick = { refreshKey++ },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 18.dp),
+                shape = RoundedCornerShape(14.dp)
+            ) {
+                Text("Check again")
+            }
+
+            Text(
+                text =
+                    "The update check reads the latest published " +
+                        "DataNudge release from GitHub. It does not " +
+                        "download or install anything automatically.",
+                modifier = Modifier.padding(
+                    top = 14.dp,
+                    bottom = 28.dp
+                ),
+                color = TextMuted,
+                fontSize = 12.sp,
+                textAlign = TextAlign.Center
+            )
+        }
+    }
+}
+
+private suspend fun checkForDataNudgeUpdate(): UpdateCheckResult {
+    return withContext(Dispatchers.IO) {
+        var connection: HttpURLConnection? = null
+
+        try {
+            connection =
+                (
+                    URL(GITHUB_LATEST_RELEASE_API)
+                        .openConnection() as HttpURLConnection
+                ).apply {
+                    requestMethod = "GET"
+                    connectTimeout = 10_000
+                    readTimeout = 10_000
+                    setRequestProperty(
+                        "Accept",
+                        "application/vnd.github+json"
+                    )
+                    setRequestProperty(
+                        "User-Agent",
+                        "DataNudge-Android"
+                    )
+                }
+
+            val responseCode = connection.responseCode
+
+            if (responseCode !in 200..299) {
+                return@withContext UpdateCheckResult(
+                    latestVersion = null,
+                    releaseUrl = null,
+                    errorMessage =
+                        "Update check failed. GitHub returned " +
+                            "$responseCode."
+                )
+            }
+
+            val json =
+                connection.inputStream
+                    .bufferedReader()
+                    .use { it.readText() }
+
+            val response = JSONObject(json)
+            val latestVersion =
+                response
+                    .optString("tag_name")
+                    .removePrefix("v")
+                    .trim()
+
+            UpdateCheckResult(
+                latestVersion =
+                    latestVersion.ifBlank { null },
+                releaseUrl =
+                    response
+                        .optString("html_url")
+                        .ifBlank { null },
+                errorMessage = null
+            )
+        } catch (_: Exception) {
+            UpdateCheckResult(
+                latestVersion = null,
+                releaseUrl = null,
+                errorMessage =
+                    "Could not check for updates. Check your " +
+                        "internet connection and try again."
+            )
+        } finally {
+            connection?.disconnect()
+        }
+    }
+}
+
+private fun isNewerVersion(
+    candidate: String,
+    current: String
+): Boolean {
+    val candidateParts =
+        candidate
+            .substringBefore(" ")
+            .split(".")
+            .map { it.toIntOrNull() ?: 0 }
+
+    val currentParts =
+        current
+            .substringBefore(" ")
+            .split(".")
+            .map { it.toIntOrNull() ?: 0 }
+
+    val length =
+        maxOf(
+            candidateParts.size,
+            currentParts.size
+        )
+
+    for (index in 0 until length) {
+        val candidateValue =
+            candidateParts.getOrElse(index) { 0 }
+
+        val currentValue =
+            currentParts.getOrElse(index) { 0 }
+
+        if (candidateValue != currentValue) {
+            return candidateValue > currentValue
+        }
+    }
+
+    return false
+}
 @Composable
 private fun AboutScreen() {
     val aboutContext = androidx.compose.ui.platform.LocalContext.current
@@ -1596,6 +1907,7 @@ private fun screenTitle(
         Screen.APPS -> "Apps to monitor"
         Screen.PERMISSIONS -> "Permissions"
         Screen.SETTINGS -> "Settings"
+        Screen.UPDATES -> "Updates"
         Screen.ABOUT -> "About"
     }
 }
@@ -1830,4 +2142,6 @@ private fun formatApproximateDataUsage(
 
     return "Approximately $value used since the connection changed"
 }
+
+
 
