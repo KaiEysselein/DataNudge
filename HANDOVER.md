@@ -381,3 +381,18 @@ uninitialized installation from an intentionally empty user selection.
 If the preference has never existed, only installed matches from the
 former defaults are selected. Existing selections are preserved.
 
+
+## Home refresh and permission review
+
+Version 0.2.2.0 removes Run setup again from the top-right menu while
+retaining it in Settings.
+
+The Home screen recognizes an upward swipe of at least 120 pixels and
+immediately refreshes the current connection, elapsed duration,
+approximate usage and monitoring state. The existing service-maintained
+connection session and traffic baseline are not reset.
+
+The Permissions screen always displays all three permission cards and
+their Android settings actions, including when every permission is
+already granted.
+

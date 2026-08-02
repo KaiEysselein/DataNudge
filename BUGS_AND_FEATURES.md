@@ -4,7 +4,7 @@
 
 # DataNudge Bugs and Features
 
-**Current released version:** `0.2.1.0`  
+**Current released version:** `0.2.2.0`  
 **Next planned bug-fix version:** `0.1.0.2`  
 **Next planned feature version:** `0.1.1.0`  
 **Last updated:** 1 August 2026
@@ -215,4 +215,14 @@ Add a clearly visible `Close` button while retaining support for the Android bac
 - Existing saved selections are preserved and are never overwritten.
 - A user may deliberately select no apps; that empty choice is preserved.
 - Monitoring continues to use the saved package-name selection set.
+
+
+## Completed in 0.2.2.0
+
+- Removed Run setup again from the top-right menu.
+- Kept Run setup again in Settings.
+- Added upward-swipe refresh to the Home screen.
+- Home refresh updates connection type, connection duration, approximate usage and monitoring state without resetting the connection session.
+- Permission cards remain visible and actionable after permissions are granted.
+- Added direct access to Android notification, usage-access and overlay settings for reviewing or changing permissions.
 

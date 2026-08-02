@@ -23,6 +23,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -65,6 +66,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.platform.LocalUriHandler
@@ -95,7 +97,7 @@ private val ScreenDark = Color(0xFF07101D)
 private val CardDark = Color(0xE6111E2F)
 private val TextMuted = Color(0xFFB8C4D6)
 
-private const val VERSION_DISPLAY = "0.2.1.0"
+private const val VERSION_DISPLAY = "0.2.2.0"
 private const val GITHUB_URL = "https://github.com/KaiEysselein/DataNudge"
 private const val GITHUB_LATEST_RELEASE_API =
     "https://api.github.com/repos/KaiEysselein/DataNudge/releases/latest"
@@ -278,7 +280,6 @@ private fun DataNudgeApp(
                 onBack = ::navigateBack,
                 onHome = { navigateTo(Screen.HOME) },
                 onSettings = { navigateTo(Screen.SETTINGS) },
-                onSetup = { navigateTo(Screen.SETUP) },
                 onUpdates = { navigateTo(Screen.UPDATES) },
                 onAbout = { navigateTo(Screen.ABOUT) }
             )
@@ -344,7 +345,6 @@ private fun DataNudgeTopBar(
     onBack: () -> Unit,
     onHome: () -> Unit,
     onSettings: () -> Unit,
-    onSetup: () -> Unit,
     onUpdates: () -> Unit,
     onAbout: () -> Unit
 ) {
@@ -420,13 +420,7 @@ private fun DataNudgeTopBar(
                         onSettings()
                     }
                 )
-                DropdownMenuItem(
-                    text = { Text("Run setup again") },
-                    onClick = {
-                        onMenuExpandedChange(false)
-                        onSetup()
-                    }
-                )
+
                 DropdownMenuItem(
                     text = { Text("Updates") },
                     onClick = {
@@ -479,6 +473,25 @@ private fun HomeScreen(
 
     var monitoringEnabled by remember {
         mutableStateOf(NetworkMonitorService.isMonitoringEnabled(context))
+    }
+
+    var swipeDistance by remember {
+        mutableStateOf(0f)
+    }
+
+    fun refreshHomeContent() {
+        val refreshedStatus =
+            getConnectionStatus(connectivityManager)
+
+        connectionStatus = refreshedStatus
+        currentTimeMillis = System.currentTimeMillis()
+        connectionSession =
+            NetworkMonitorService.getConnectionSession(
+                context = context,
+                currentStatus = refreshedStatus
+            )
+        monitoringEnabled =
+            NetworkMonitorService.isMonitoringEnabled(context)
     }
 
     var appResumed by remember {
@@ -624,7 +637,67 @@ private fun HomeScreen(
 
     LazyColumn(
         modifier = Modifier
-            .fillMaxSize()
+                        .fillMaxSize()
+            .pointerInput(Unit) {
+                detectVerticalDragGestures(
+                    onDragStart = {
+                        swipeDistance = 0f
+                    },
+                    onVerticalDrag = { _, dragAmount ->
+                        swipeDistance += dragAmount
+                    },
+                    onDragEnd = {
+                        if (swipeDistance <= -120f) {
+                            refreshHomeContent()
+                        }
+
+                        swipeDistance = 0f
+                    },
+                    onDragCancel = {
+                        swipeDistance = 0f
+                    }
+                )
+            }
+            .pointerInput(Unit) {
+                detectVerticalDragGestures(
+                    onDragStart = {
+                        swipeDistance = 0f
+                    },
+                    onVerticalDrag = { _, dragAmount ->
+                        swipeDistance += dragAmount
+                    },
+                    onDragEnd = {
+                        if (swipeDistance <= -120f) {
+                            refreshHomeContent()
+                        }
+
+                        swipeDistance = 0f
+                    },
+                    onDragCancel = {
+                        swipeDistance = 0f
+                    }
+                )
+            }
+            .pointerInput(Unit) {
+                detectVerticalDragGestures(
+                    onDragStart = {
+                        swipeDistance = 0f
+                    },
+                    onVerticalDrag = { _, dragAmount ->
+                        swipeDistance += dragAmount
+                    },
+                    onDragEnd = {
+                        if (swipeDistance <= -120f) {
+                            refreshHomeContent()
+                        }
+
+                        swipeDistance = 0f
+                    },
+                    onDragCancel = {
+                        swipeDistance = 0f
+                    }
+                )
+            }
             .padding(horizontal = 20.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -635,6 +708,14 @@ private fun HomeScreen(
                 painter = painterResource(R.mipmap.datanudge_icon),
                 contentDescription = "DataNudge logo",
                 modifier = Modifier.size(92.dp)
+            )
+
+            Spacer(Modifier.height(8.dp))
+
+            Text(
+                text = "Swipe up to refresh",
+                color = TextMuted,
+                fontSize = 12.sp
             )
 
             Spacer(Modifier.height(12.dp))
@@ -1717,11 +1798,33 @@ private fun PermissionsScreen(
                 title = "Notifications",
                 description = "Shows current connection status and foreground monitoring.",
                 granted = notificationGranted,
-                buttonText = "Allow notifications",
+                buttonText =
+                    if (notificationGranted) {
+                        "Review notification settings"
+                    } else {
+                        "Allow notifications"
+                    },
                 onClick = {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    if (
+                        Build.VERSION.SDK_INT >=
+                            Build.VERSION_CODES.TIRAMISU &&
+                        !notificationGranted
+                    ) {
                         notificationPermissionLauncher.launch(
                             Manifest.permission.POST_NOTIFICATIONS
+                        )
+                    } else {
+                        context.startActivity(
+                            Intent(
+                                Settings.ACTION_APP_NOTIFICATION_SETTINGS
+                            )
+                                .putExtra(
+                                    Settings.EXTRA_APP_PACKAGE,
+                                    context.packageName
+                                )
+                                .addFlags(
+                                    Intent.FLAG_ACTIVITY_NEW_TASK
+                                )
                         )
                     }
                 }
@@ -1733,7 +1836,12 @@ private fun PermissionsScreen(
                 title = "Usage access",
                 description = "Detects when a selected app enters the foreground.",
                 granted = usageGranted,
-                buttonText = "Open usage access",
+                buttonText =
+                    if (usageGranted) {
+                        "Review usage access"
+                    } else {
+                        "Open usage access"
+                    },
                 onClick = {
                     context.startActivity(
                         Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)
@@ -1748,7 +1856,12 @@ private fun PermissionsScreen(
                 title = "Display over other apps",
                 description = "Displays the mobile-data reminder over the selected app.",
                 granted = overlayGranted,
-                buttonText = "Open overlay permission",
+                buttonText =
+                    if (overlayGranted) {
+                        "Review overlay permission"
+                    } else {
+                        "Open overlay permission"
+                    },
                 onClick = {
                     context.startActivity(
                         Intent(
@@ -2599,15 +2712,13 @@ private fun PermissionCard(
                 fontSize = 13.sp
             )
 
-            if (!granted) {
-                OutlinedButton(
-                    onClick = onClick,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 10.dp)
-                ) {
-                    Text(buttonText)
-                }
+            OutlinedButton(
+                onClick = onClick,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 10.dp)
+            ) {
+                Text(buttonText)
             }
         }
     }
@@ -2915,6 +3026,10 @@ private fun formatApproximateDataUsage(
 
     return "Approximately $value used since the connection changed"
 }
+
+
+
+
 
 
 
