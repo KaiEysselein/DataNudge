@@ -4,7 +4,7 @@
 
 # DataNudge Bugs and Features
 
-**Current released version:** `0.2.0.0`  
+**Current released version:** `0.2.1.0`  
 **Next planned bug-fix version:** `0.1.0.2`  
 **Next planned feature version:** `0.1.1.0`  
 **Last updated:** 1 August 2026
@@ -203,4 +203,16 @@ Add a clearly visible `Close` button while retaining support for the Android bac
 - Added loading, empty-list and error states.
 - Existing Apps to monitor behaviour remains unchanged.
 - Hidden Android system components are intentionally excluded.
+
+
+## Completed in 0.2.1.0
+
+- Replaced the fixed visible high-data app list with installed apps.
+- Apps to monitor now lists all launchable installed apps.
+- Each app shows its icon, display name, package name and checkbox.
+- Removed the temporary separate Installed apps Settings option and page.
+- On first initialization only, installed matches from the former 20 defaults are selected.
+- Existing saved selections are preserved and are never overwritten.
+- A user may deliberately select no apps; that empty choice is preserved.
+- Monitoring continues to use the saved package-name selection set.
 

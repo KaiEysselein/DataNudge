@@ -593,6 +593,17 @@ class NetworkMonitorService : Service() {
                 .apply()
         }
 
+        fun hasSelectedPackagesPreference(
+            context: Context
+        ): Boolean {
+            return context
+                .getSharedPreferences(
+                    PREFERENCES_NAME,
+                    Context.MODE_PRIVATE
+                )
+                .contains(KEY_SELECTED_PACKAGES)
+        }
+
         fun getSelectedPackages(
             context: Context
         ): Set<String> {
@@ -776,6 +787,7 @@ fun describeNetworkCapabilities(
             "Other connection"
     }
 }
+
 
 
 

@@ -95,7 +95,7 @@ private val ScreenDark = Color(0xFF07101D)
 private val CardDark = Color(0xE6111E2F)
 private val TextMuted = Color(0xFFB8C4D6)
 
-private const val VERSION_DISPLAY = "0.2.0.0"
+private const val VERSION_DISPLAY = "0.2.1.0"
 private const val GITHUB_URL = "https://github.com/KaiEysselein/DataNudge"
 private const val GITHUB_LATEST_RELEASE_API =
     "https://api.github.com/repos/KaiEysselein/DataNudge/releases/latest"
@@ -119,35 +119,34 @@ data class ConnectionSessionSnapshot(
     val approximateUsedBytes: Long?
 )
 
-private val CURATED_HIGH_DATA_APPS =
-    listOf(
-        LaunchableApp("YouTube", "com.google.android.youtube"),
-        LaunchableApp("Netflix", "com.netflix.mediaclient"),
-        LaunchableApp("TikTok", "com.zhiliaoapp.musically"),
-        LaunchableApp("Spotify", "com.spotify.music"),
-        LaunchableApp("YouTube Music", "com.google.android.apps.youtube.music"),
-        LaunchableApp("Instagram", "com.instagram.android"),
-        LaunchableApp("Facebook", "com.facebook.katana"),
-        LaunchableApp("WhatsApp", "com.whatsapp"),
-        LaunchableApp("Messenger", "com.facebook.orca"),
-        LaunchableApp("Snapchat", "com.snapchat.android"),
-        LaunchableApp("Prime Video", "com.amazon.avod.thirdpartyclient"),
-        LaunchableApp("Disney+", "com.disney.disneyplus"),
-        LaunchableApp("Twitch", "tv.twitch.android.app"),
-        LaunchableApp("X", "com.twitter.android"),
-        LaunchableApp("Google Meet", "com.google.android.apps.tachyon"),
-        LaunchableApp("Zoom", "us.zoom.videomeetings"),
-        LaunchableApp("Microsoft Teams", "com.microsoft.teams"),
-        LaunchableApp("Google Chrome", "com.android.chrome"),
-        LaunchableApp("Google Maps", "com.google.android.apps.maps"),
-        LaunchableApp("Google Drive", "com.google.android.apps.docs")
+private val DEFAULT_MONITORED_PACKAGE_NAMES =
+    setOf(
+        "com.google.android.youtube",
+        "com.netflix.mediaclient",
+        "com.zhiliaoapp.musically",
+        "com.spotify.music",
+        "com.google.android.apps.youtube.music",
+        "com.instagram.android",
+        "com.facebook.katana",
+        "com.whatsapp",
+        "com.facebook.orca",
+        "com.snapchat.android",
+        "com.amazon.avod.thirdpartyclient",
+        "com.disney.disneyplus",
+        "tv.twitch.android.app",
+        "com.twitter.android",
+        "com.google.android.apps.tachyon",
+        "us.zoom.videomeetings",
+        "com.microsoft.teams",
+        "com.android.chrome",
+        "com.google.android.apps.maps",
+        "com.google.android.apps.docs"
     )
 
 private enum class Screen {
     HOME,
     SETUP,
     APPS,
-    INSTALLED_APPS,
     PERMISSIONS,
     SETTINGS,
     UPDATES,
@@ -317,17 +316,12 @@ private fun DataNudgeApp(
 
                 Screen.APPS -> AppsScreen()
 
-                Screen.INSTALLED_APPS -> InstalledAppsScreen()
-
                 Screen.PERMISSIONS -> PermissionsScreen(
                     permissionRefreshKey = permissionRefreshKey
                 )
 
                 Screen.SETTINGS -> SettingsScreen(
                     onApps = { navigateTo(Screen.APPS) },
-                    onInstalledApps = {
-                        navigateTo(Screen.INSTALLED_APPS)
-                    },
                     onPermissions = {
                         navigateTo(Screen.PERMISSIONS)
                     },
@@ -925,6 +919,49 @@ private fun SetupScreen(
         mutableStateOf(NetworkMonitorService.getSelectedPackages(context))
     }
 
+    var installedApps by remember {
+        mutableStateOf<List<InstalledAppInfo>>(emptyList())
+    }
+
+    var installedAppsLoading by remember {
+        mutableStateOf(true)
+    }
+
+    LaunchedEffect(Unit) {
+        installedAppsLoading = true
+
+        val loadedApps =
+            withContext(Dispatchers.IO) {
+                loadInstalledLaunchableApps(context)
+            }
+
+        installedApps = loadedApps
+
+        if (
+            !NetworkMonitorService
+                .hasSelectedPackagesPreference(context)
+        ) {
+            val installedPackageNames =
+                loadedApps
+                    .map { it.packageName }
+                    .toSet()
+
+            selectedPackages =
+                DEFAULT_MONITORED_PACKAGE_NAMES
+                    .intersect(installedPackageNames)
+
+            NetworkMonitorService.setSelectedPackages(
+                context,
+                selectedPackages
+            )
+        } else {
+            selectedPackages =
+                NetworkMonitorService.getSelectedPackages(context)
+        }
+
+        installedAppsLoading = false
+    }
+
     val notificationGranted =
         notificationPermissionGranted(context)
 
@@ -1095,8 +1132,20 @@ private fun SetupScreen(
                                 .weight(1f)
                                 .padding(top = 8.dp)
                         ) {
+                            if (installedAppsLoading) {
+                                item {
+                                    Text(
+                                        text = "Loading installed apps...",
+                                        color = TextMuted,
+                                        modifier = Modifier.padding(
+                                            vertical = 12.dp
+                                        )
+                                    )
+                                }
+                            }
+
                             items(
-                                items = CURATED_HIGH_DATA_APPS,
+                                items = installedApps,
                                 key = { it.packageName }
                             ) { app ->
                                 Row(
@@ -1360,8 +1409,66 @@ private fun SetupStepCard(
 @Composable
 private fun AppsScreen() {
     val context = LocalContext.current
+
+    var loading by remember {
+        mutableStateOf(true)
+    }
+
+    var apps by remember {
+        mutableStateOf<List<InstalledAppInfo>>(emptyList())
+    }
+
     var selectedPackages by remember {
-        mutableStateOf(NetworkMonitorService.getSelectedPackages(context))
+        mutableStateOf(
+            NetworkMonitorService.getSelectedPackages(context)
+        )
+    }
+
+    var loadError by remember {
+        mutableStateOf<String?>(null)
+    }
+
+    LaunchedEffect(Unit) {
+        loading = true
+        loadError = null
+
+        try {
+            val installedApps =
+                withContext(Dispatchers.IO) {
+                    loadInstalledLaunchableApps(context)
+                }
+
+            apps = installedApps
+
+            if (
+                !NetworkMonitorService
+                    .hasSelectedPackagesPreference(context)
+            ) {
+                val installedPackageNames =
+                    installedApps
+                        .map { it.packageName }
+                        .toSet()
+
+                selectedPackages =
+                    DEFAULT_MONITORED_PACKAGE_NAMES
+                        .intersect(installedPackageNames)
+
+                NetworkMonitorService.setSelectedPackages(
+                    context,
+                    selectedPackages
+                )
+            } else {
+                selectedPackages =
+                    NetworkMonitorService.getSelectedPackages(
+                        context
+                    )
+            }
+        } catch (_: Exception) {
+            loadError =
+                "DataNudge could not read the installed app list."
+        } finally {
+            loading = false
+        }
     }
 
     LazyColumn(
@@ -1380,25 +1487,55 @@ private fun AppsScreen() {
             )
 
             Text(
-                text = "DataNudge warns when a selected app opens while mobile data is active.",
-                modifier = Modifier.padding(top = 5.dp, bottom = 12.dp),
+                text =
+                    "Select any installed app that should trigger " +
+                        "a reminder when it opens on mobile data.",
+                modifier = Modifier.padding(
+                    top = 5.dp,
+                    bottom = 12.dp
+                ),
                 color = TextMuted,
                 fontSize = 14.sp
             )
 
-            Text(
-                text = "${selectedPackages.size} selected",
-                color = DataGreen,
-                fontWeight = FontWeight.Bold
-            )
+            when {
+                loading -> {
+                    Text(
+                        text = "Loading installed apps...",
+                        color = TextMuted
+                    )
+                }
+
+                loadError != null -> {
+                    Text(
+                        text =
+                            loadError
+                                ?: "Could not load installed apps.",
+                        color = DataOrange
+                    )
+                }
+
+                else -> {
+                    Text(
+                        text =
+                            "${selectedPackages.size} selected " +
+                                "from ${apps.size} installed apps",
+                        color = DataGreen,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
 
             Spacer(Modifier.height(10.dp))
         }
 
         items(
-            items = CURATED_HIGH_DATA_APPS,
+            items = apps,
             key = { it.packageName }
         ) { app ->
+            val checked =
+                app.packageName in selectedPackages
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -1417,154 +1554,12 @@ private fun AppsScreen() {
                     .padding(vertical = 9.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Column(
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text(
-                        text = app.label,
-                        color = Color.White,
-                        fontWeight = FontWeight.Medium
-                    )
-
-                    Text(
-                        text = app.packageName,
-                        color = TextMuted,
-                        fontSize = 11.sp
-                    )
-                }
-
-                Checkbox(
-                    checked = app.packageName in selectedPackages,
-                    onCheckedChange = { checked ->
-                        selectedPackages =
-                            if (checked) {
-                                selectedPackages + app.packageName
-                            } else {
-                                selectedPackages - app.packageName
-                            }
-
-                        NetworkMonitorService.setSelectedPackages(
-                            context,
-                            selectedPackages
-                        )
-                    }
-                )
-            }
-
-            HorizontalDivider(color = Color.White.copy(alpha = 0.08f))
-        }
-
-        item {
-            Spacer(Modifier.height(28.dp))
-        }
-    }
-}
-
-
-@Composable
-private fun InstalledAppsScreen() {
-    val context = LocalContext.current
-
-    var loading by remember { mutableStateOf(true) }
-    var apps by remember {
-        mutableStateOf<List<InstalledAppInfo>>(emptyList())
-    }
-    var loadError by remember {
-        mutableStateOf<String?>(null)
-    }
-
-    LaunchedEffect(Unit) {
-        loading = true
-        loadError = null
-
-        try {
-            apps =
-                withContext(Dispatchers.IO) {
-                    loadInstalledLaunchableApps(context)
-                }
-        } catch (_: Exception) {
-            loadError =
-                "DataNudge could not read the installed app list."
-        } finally {
-            loading = false
-        }
-    }
-
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 20.dp)
-    ) {
-        item {
-            Spacer(Modifier.height(16.dp))
-
-            Text(
-                text = "Installed apps",
-                color = Color.White,
-                fontSize = 25.sp,
-                fontWeight = FontWeight.Bold
-            )
-
-            Text(
-                text =
-                    "Apps that can normally be launched on this phone. " +
-                        "Hidden system components are not shown.",
-                modifier = Modifier.padding(
-                    top = 5.dp,
-                    bottom = 14.dp
-                ),
-                color = TextMuted,
-                fontSize = 14.sp
-            )
-
-            when {
-                loading -> {
-                    Text(
-                        text = "Loading installed apps...",
-                        color = TextMuted
-                    )
-
-                    Spacer(Modifier.height(18.dp))
-                }
-
-                loadError != null -> {
-                    Text(
-                        text = loadError ?: "Could not load apps.",
-                        color = DataOrange
-                    )
-
-                    Spacer(Modifier.height(18.dp))
-                }
-
-                else -> {
-                    Text(
-                        text =
-                            "${apps.size} app" +
-                                if (apps.size == 1) "" else "s",
-                        color = DataGreen,
-                        fontWeight = FontWeight.Bold
-                    )
-
-                    Spacer(Modifier.height(10.dp))
-                }
-            }
-        }
-
-        items(
-            items = apps,
-            key = { it.packageName }
-        ) { app ->
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 9.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
                 AndroidView(
                     factory = { viewContext ->
                         android.widget.ImageView(viewContext).apply {
                             scaleType =
-                                android.widget.ImageView.ScaleType.FIT_CENTER
+                                android.widget.ImageView
+                                    .ScaleType.FIT_CENTER
                         }
                     },
                     update = { imageView ->
@@ -1591,6 +1586,25 @@ private fun InstalledAppsScreen() {
                         fontSize = 11.sp
                     )
                 }
+
+                Checkbox(
+                    checked = checked,
+                    onCheckedChange = { isChecked ->
+                        selectedPackages =
+                            if (isChecked) {
+                                selectedPackages +
+                                    app.packageName
+                            } else {
+                                selectedPackages -
+                                    app.packageName
+                            }
+
+                        NetworkMonitorService.setSelectedPackages(
+                            context,
+                            selectedPackages
+                        )
+                    }
+                )
             }
 
             HorizontalDivider(
@@ -1598,7 +1612,11 @@ private fun InstalledAppsScreen() {
             )
         }
 
-        if (!loading && loadError == null && apps.isEmpty()) {
+        if (
+            !loading &&
+            loadError == null &&
+            apps.isEmpty()
+        ) {
             item {
                 Text(
                     text = "No launchable apps were found.",
@@ -1613,6 +1631,7 @@ private fun InstalledAppsScreen() {
         }
     }
 }
+
 
 private fun loadInstalledLaunchableApps(
     context: Context
@@ -1748,7 +1767,6 @@ private fun PermissionsScreen(
 @Composable
 private fun SettingsScreen(
     onApps: () -> Unit,
-    onInstalledApps: () -> Unit,
     onPermissions: () -> Unit,
     onSetup: () -> Unit
 ) {
@@ -1789,13 +1807,6 @@ private fun SettingsScreen(
 
             Spacer(Modifier.height(10.dp))
 
-            SettingsRow(
-                title = "Installed apps",
-                subtitle = "View apps that can be launched on this phone",
-                onClick = onInstalledApps
-            )
-
-            Spacer(Modifier.height(10.dp))
 
             SettingsRow(
                 title = "Permissions",
@@ -2609,7 +2620,6 @@ private fun screenTitle(
         Screen.HOME -> "DataNudge"
         Screen.SETUP -> "Setup"
         Screen.APPS -> "Apps to monitor"
-        Screen.INSTALLED_APPS -> "Installed apps"
         Screen.PERMISSIONS -> "Permissions"
         Screen.SETTINGS -> "Settings"
         Screen.UPDATES -> "Updates"
@@ -2905,6 +2915,8 @@ private fun formatApproximateDataUsage(
 
     return "Approximately $value used since the connection changed"
 }
+
+
 
 
 
