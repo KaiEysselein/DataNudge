@@ -77,7 +77,7 @@ private val ScreenDark = Color(0xFF07101D)
 private val CardDark = Color(0xE6111E2F)
 private val TextMuted = Color(0xFFB8C4D6)
 
-private const val VERSION_DISPLAY = "0.1.0.3"
+private const val VERSION_DISPLAY = "0.1.1.0"
 private const val GITHUB_URL = "https://github.com/KaiEysselein/DataNudge"
 private const val UI_PREFERENCES = "datanudge_ui_preferences"
 private const val KEY_SETUP_COMPLETED = "setup_completed"
@@ -85,6 +85,12 @@ private const val KEY_SETUP_COMPLETED = "setup_completed"
 data class LaunchableApp(
     val label: String,
     val packageName: String
+)
+
+data class ConnectionSessionSnapshot(
+    val connectionStatus: String,
+    val startedAtMillis: Long,
+    val approximateUsedBytes: Long?
 )
 
 private val CURATED_HIGH_DATA_APPS =
@@ -334,6 +340,19 @@ private fun HomeScreen(
         mutableStateOf(getConnectionStatus(connectivityManager))
     }
 
+    var currentTimeMillis by remember {
+        mutableStateOf(System.currentTimeMillis())
+    }
+
+    var connectionSession by remember(connectionStatus) {
+        mutableStateOf(
+            NetworkMonitorService.getConnectionSession(
+                context = context,
+                currentStatus = connectionStatus
+            )
+        )
+    }
+
     var monitoringEnabled by remember {
         mutableStateOf(NetworkMonitorService.isMonitoringEnabled(context))
     }
@@ -375,6 +394,24 @@ private fun HomeScreen(
             startNetworkMonitorService(context)
             monitoringEnabled = true
         }
+
+        while (true) {
+            currentTimeMillis = System.currentTimeMillis()
+            connectionSession =
+                NetworkMonitorService.getConnectionSession(
+                    context = context,
+                    currentStatus = connectionStatus
+                )
+            kotlinx.coroutines.delay(1_000L)
+        }
+    }
+
+    LaunchedEffect(connectionStatus) {
+        connectionSession =
+            NetworkMonitorService.getConnectionSession(
+                context = context,
+                currentStatus = connectionStatus
+            )
     }
 
     DisposableEffect(connectivityManager) {
@@ -433,6 +470,16 @@ private fun HomeScreen(
         item {
             ConnectionCard(
                 connectionStatus = connectionStatus,
+                connectedForText =
+                    formatConnectionDuration(
+                        elapsedMillis =
+                            (currentTimeMillis - connectionSession.startedAtMillis)
+                                .coerceAtLeast(0L)
+                    ),
+                approximateUsageText =
+                    formatApproximateDataUsage(
+                        bytes = connectionSession.approximateUsedBytes
+                    ),
                 monitoringEnabled = monitoringEnabled,
                 selectedAppCount = selectedPackages.size,
                 onToggleMonitoring = {
@@ -542,6 +589,8 @@ private fun MustDoNowCard(
 @Composable
 private fun ConnectionCard(
     connectionStatus: String,
+    connectedForText: String,
+    approximateUsageText: String,
     monitoringEnabled: Boolean,
     selectedAppCount: Int,
     onToggleMonitoring: () -> Unit
@@ -571,6 +620,23 @@ private fun ConnectionCard(
                 color = connectionColour(connectionStatus),
                 fontSize = 30.sp,
                 fontWeight = FontWeight.Bold
+            )
+
+            Text(
+                text = "Connected for $connectedForText",
+                modifier = Modifier.padding(top = 12.dp),
+                color = Color.White,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
+            )
+
+            Text(
+                text = approximateUsageText,
+                modifier = Modifier.padding(top = 5.dp),
+                color = TextMuted,
+                fontSize = 13.sp,
+                textAlign = TextAlign.Center
             )
 
             Row(
@@ -1702,9 +1768,66 @@ private fun showDataNudgeDisclaimer(
 
     dialog.show()
 }
+private fun formatConnectionDuration(
+    elapsedMillis: Long
+): String {
+    val totalMinutes = elapsedMillis / 60_000L
 
+    if (totalMinutes < 1L) {
+        return "less than a minute"
+    }
 
+    val days = totalMinutes / (24L * 60L)
+    val hours = (totalMinutes % (24L * 60L)) / 60L
+    val minutes = totalMinutes % 60L
 
+    return when {
+        days > 0L && hours > 0L ->
+            "$days day${if (days == 1L) "" else "s"} " +
+                "$hours hour${if (hours == 1L) "" else "s"}"
 
+        days > 0L ->
+            "$days day${if (days == 1L) "" else "s"}"
 
+        hours > 0L && minutes > 0L ->
+            "$hours hour${if (hours == 1L) "" else "s"} " +
+                "$minutes minute${if (minutes == 1L) "" else "s"}"
+
+        hours > 0L ->
+            "$hours hour${if (hours == 1L) "" else "s"}"
+
+        else ->
+            "$minutes minute${if (minutes == 1L) "" else "s"}"
+    }
+}
+
+private fun formatApproximateDataUsage(
+    bytes: Long?
+): String {
+    if (bytes == null) {
+        return "Approximate data use is unavailable on this device"
+    }
+
+    val safeBytes = bytes.coerceAtLeast(0L)
+    val kibibytes = safeBytes / 1_024.0
+    val mebibytes = kibibytes / 1_024.0
+    val gibibytes = mebibytes / 1_024.0
+
+    val value =
+        when {
+            gibibytes >= 1.0 ->
+                String.format(java.util.Locale.US, "%.2f GB", gibibytes)
+
+            mebibytes >= 1.0 ->
+                String.format(java.util.Locale.US, "%.1f MB", mebibytes)
+
+            kibibytes >= 1.0 ->
+                String.format(java.util.Locale.US, "%.0f KB", kibibytes)
+
+            else ->
+                "$safeBytes bytes"
+        }
+
+    return "Approximately $value used since the connection changed"
+}
 

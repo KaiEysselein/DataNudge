@@ -18,6 +18,7 @@ import android.graphics.drawable.GradientDrawable
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
+import android.net.TrafficStats
 import android.os.Build
 import android.os.Handler
 import android.os.IBinder
@@ -93,6 +94,11 @@ class NetworkMonitorService : Service() {
         lastConnectionStatus = getConnectionStatus(connectivityManager)
         lastUsageCheckTime = System.currentTimeMillis() - 3_000L
 
+        getConnectionSession(
+            context = this,
+            currentStatus = lastConnectionStatus ?: "Unknown connection"
+        )
+
         startAsForegroundService(
             lastConnectionStatus ?: "Unknown connection"
         )
@@ -142,6 +148,11 @@ class NetworkMonitorService : Service() {
         }
 
         lastConnectionStatus = newStatus
+
+        resetConnectionSession(
+            context = this,
+            newStatus = newStatus
+        )
 
         getSystemService(NotificationManager::class.java).notify(
             MONITORING_NOTIFICATION_ID,
@@ -445,6 +456,18 @@ class NetworkMonitorService : Service() {
         private const val KEY_SELECTED_PACKAGES =
             "selected_packages"
 
+        private const val KEY_SESSION_CONNECTION_STATUS =
+            "session_connection_status"
+
+        private const val KEY_SESSION_STARTED_AT_MILLIS =
+            "session_started_at_millis"
+
+        private const val KEY_SESSION_BASELINE_RX_BYTES =
+            "session_baseline_rx_bytes"
+
+        private const val KEY_SESSION_BASELINE_TX_BYTES =
+            "session_baseline_tx_bytes"
+
         fun isMonitoringEnabled(
             context: Context
         ): Boolean {
@@ -483,6 +506,129 @@ class NetworkMonitorService : Service() {
                 .edit()
                 .putStringSet(KEY_SELECTED_PACKAGES, packages.toSet())
                 .apply()
+        }
+
+        fun getConnectionSession(
+            context: Context,
+            currentStatus: String
+        ): ConnectionSessionSnapshot {
+            val preferences =
+                context.getSharedPreferences(
+                    PREFERENCES_NAME,
+                    Context.MODE_PRIVATE
+                )
+
+            val now = System.currentTimeMillis()
+            val totalRxBytes = supportedTrafficCounter(TrafficStats.getTotalRxBytes())
+            val totalTxBytes = supportedTrafficCounter(TrafficStats.getTotalTxBytes())
+
+            val storedStatus =
+                preferences.getString(
+                    KEY_SESSION_CONNECTION_STATUS,
+                    null
+                )
+
+            val storedStartedAt =
+                preferences.getLong(
+                    KEY_SESSION_STARTED_AT_MILLIS,
+                    0L
+                )
+
+            val baselineRx =
+                preferences.getLong(
+                    KEY_SESSION_BASELINE_RX_BYTES,
+                    -1L
+                )
+
+            val baselineTx =
+                preferences.getLong(
+                    KEY_SESSION_BASELINE_TX_BYTES,
+                    -1L
+                )
+
+            val countersReset =
+                totalRxBytes != null &&
+                    totalTxBytes != null &&
+                    (
+                        baselineRx < 0L ||
+                            baselineTx < 0L ||
+                            totalRxBytes < baselineRx ||
+                            totalTxBytes < baselineTx
+                    )
+
+            if (
+                storedStatus != currentStatus ||
+                storedStartedAt <= 0L ||
+                countersReset
+            ) {
+                return resetConnectionSession(
+                    context = context,
+                    newStatus = currentStatus
+                )
+            }
+
+            val usedBytes =
+                if (
+                    totalRxBytes != null &&
+                    totalTxBytes != null &&
+                    baselineRx >= 0L &&
+                    baselineTx >= 0L
+                ) {
+                    (
+                        (totalRxBytes - baselineRx) +
+                            (totalTxBytes - baselineTx)
+                    ).coerceAtLeast(0L)
+                } else {
+                    null
+                }
+
+            return ConnectionSessionSnapshot(
+                connectionStatus = currentStatus,
+                startedAtMillis = storedStartedAt,
+                approximateUsedBytes = usedBytes
+            )
+        }
+
+        fun resetConnectionSession(
+            context: Context,
+            newStatus: String
+        ): ConnectionSessionSnapshot {
+            val now = System.currentTimeMillis()
+            val totalRxBytes = supportedTrafficCounter(TrafficStats.getTotalRxBytes())
+            val totalTxBytes = supportedTrafficCounter(TrafficStats.getTotalTxBytes())
+
+            context
+                .getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
+                .edit()
+                .putString(KEY_SESSION_CONNECTION_STATUS, newStatus)
+                .putLong(KEY_SESSION_STARTED_AT_MILLIS, now)
+                .putLong(KEY_SESSION_BASELINE_RX_BYTES, totalRxBytes ?: -1L)
+                .putLong(KEY_SESSION_BASELINE_TX_BYTES, totalTxBytes ?: -1L)
+                .apply()
+
+            return ConnectionSessionSnapshot(
+                connectionStatus = newStatus,
+                startedAtMillis = now,
+                approximateUsedBytes =
+                    if (totalRxBytes != null && totalTxBytes != null) {
+                        0L
+                    } else {
+                        null
+                    }
+            )
+        }
+
+        private fun supportedTrafficCounter(
+            value: Long
+        ): Long? {
+            return if (
+                value == TrafficStats.UNSUPPORTED.toLong() ||
+                value < 0L
+            ) {
+                null
+            } else {
+                value
+            }
         }
     }
 }
@@ -524,3 +670,4 @@ fun describeNetworkCapabilities(
             "Other connection"
     }
 }
+
