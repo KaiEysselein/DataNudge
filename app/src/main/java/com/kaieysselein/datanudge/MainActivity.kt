@@ -46,6 +46,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -54,6 +55,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -73,10 +75,13 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import com.kaieysselein.datanudge.ui.theme.DataNudgeTheme
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.net.URL
+import java.io.File
+import java.security.MessageDigest
 
 private val DataBlue = Color(0xFF0878F9)
 private val DataGreen = Color(0xFF20C94B)
@@ -86,7 +91,7 @@ private val ScreenDark = Color(0xFF07101D)
 private val CardDark = Color(0xE6111E2F)
 private val TextMuted = Color(0xFFB8C4D6)
 
-private const val VERSION_DISPLAY = "0.1.4.2"
+private const val VERSION_DISPLAY = "0.1.5.0"
 private const val GITHUB_URL = "https://github.com/KaiEysselein/DataNudge"
 private const val GITHUB_LATEST_RELEASE_API =
     "https://api.github.com/repos/KaiEysselein/DataNudge/releases/latest"
@@ -141,9 +146,27 @@ private enum class Screen {
 class MainActivity : ComponentActivity() {
 
     private var permissionRefreshKey by mutableIntStateOf(0)
+    private var openUpdatesKey by mutableIntStateOf(0)
+
+    companion object {
+        const val EXTRA_OPEN_UPDATES =
+            "open_updates"
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        if (
+            intent.getBooleanExtra(
+                EXTRA_OPEN_UPDATES,
+                false
+            )
+        ) {
+            openUpdatesKey++
+        }
+
+        UpdateCheckScheduler.ensureScheduled(this)
+
         val disclaimerPreferences = getSharedPreferences(
             DISCLAIMER_PREFERENCES,
             android.content.Context.MODE_PRIVATE
@@ -165,10 +188,25 @@ class MainActivity : ComponentActivity() {
                 ) {
                     DataNudgeApp(
                         permissionRefreshKey = permissionRefreshKey,
+                        openUpdatesKey = openUpdatesKey,
                         hideApp = { moveTaskToBack(true) }
                     )
                 }
             }
+        }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+
+        if (
+            intent.getBooleanExtra(
+                EXTRA_OPEN_UPDATES,
+                false
+            )
+        ) {
+            openUpdatesKey++
         }
     }
 
@@ -181,6 +219,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 private fun DataNudgeApp(
     permissionRefreshKey: Int,
+    openUpdatesKey: Int,
     hideApp: () -> Unit
 ) {
     val context = LocalContext.current
@@ -211,6 +250,12 @@ private fun DataNudgeApp(
 
     BackHandler(enabled = navigationStack.size > 1) {
         navigateBack()
+    }
+
+    LaunchedEffect(openUpdatesKey) {
+        if (openUpdatesKey > 0) {
+            navigateTo(Screen.UPDATES)
+        }
     }
 
     Scaffold(
@@ -1497,6 +1542,14 @@ private fun SettingsScreen(
     onPermissions: () -> Unit,
     onSetup: () -> Unit
 ) {
+    val context = LocalContext.current
+
+    var automaticUpdateChecks by remember {
+        mutableStateOf(
+            UpdateCheckScheduler.isEnabled(context)
+        )
+    }
+
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -1540,6 +1593,52 @@ private fun SettingsScreen(
                 onClick = onSetup
             )
 
+            Spacer(Modifier.height(10.dp))
+
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(18.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = CardDark
+                )
+            ) {
+                Row(
+                    modifier = Modifier.padding(16.dp),
+                    verticalAlignment =
+                        Alignment.CenterVertically
+                ) {
+                    Column(
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text(
+                            text = "Automatic update checks",
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold
+                        )
+
+                        Text(
+                            text =
+                                "Check GitHub approximately once " +
+                                    "per day",
+                            modifier =
+                                Modifier.padding(top = 4.dp),
+                            color = TextMuted,
+                            fontSize = 13.sp
+                        )
+                    }
+
+                    Switch(
+                        checked = automaticUpdateChecks,
+                        onCheckedChange = { enabled ->
+                            automaticUpdateChecks = enabled
+                            UpdateCheckScheduler.setEnabled(
+                                context = context,
+                                enabled = enabled
+                            )
+                        }
+                    )
+                }
+            }
 
             Spacer(Modifier.height(28.dp))
         }
@@ -1564,14 +1663,23 @@ private data class UpdateCheckResult(
     val latestVersion: String?,
     val releaseUrl: String?,
     val apkDownloadUrl: String?,
+    val apkSha256: String?,
     val errorMessage: String?
 )
 
 @Composable
 private fun UpdatesScreen() {
+    val context = LocalContext.current
     val uriHandler = LocalUriHandler.current
+    val coroutineScope = rememberCoroutineScope()
 
     var checking by remember { mutableStateOf(true) }
+    var downloadStatus by remember {
+        mutableStateOf<String?>(null)
+    }
+    var downloadProgress by remember {
+        mutableIntStateOf(0)
+    }
     var refreshKey by remember { mutableIntStateOf(0) }
     var result by remember {
         mutableStateOf(
@@ -1579,6 +1687,7 @@ private fun UpdatesScreen() {
                 latestVersion = null,
                 releaseUrl = null,
                 apkDownloadUrl = null,
+                apkSha256 = null,
                 errorMessage = null
             )
         )
@@ -1586,6 +1695,7 @@ private fun UpdatesScreen() {
 
     LaunchedEffect(refreshKey) {
         checking = true
+        UpdateCheckScheduler.checkNow(context)
         result = checkForDataNudgeUpdate()
         checking = false
     }
@@ -1683,11 +1793,73 @@ private fun UpdatesScreen() {
 
                             Button(
                                 onClick = {
-                                    result.apkDownloadUrl?.let(
-                                        uriHandler::openUri
-                                    )
+                                    val apkUrl =
+                                        result.apkDownloadUrl
+
+                                    if (apkUrl != null) {
+                                        if (
+                                            Build.VERSION.SDK_INT >=
+                                                Build.VERSION_CODES.O &&
+                                            !context.packageManager
+                                                .canRequestPackageInstalls()
+                                        ) {
+                                            downloadStatus =
+                                                "Allow DataNudge to " +
+                                                    "install unknown " +
+                                                    "apps, then return " +
+                                                    "and tap again."
+
+                                            context.startActivity(
+                                                Intent(
+                                                    Settings
+                                                        .ACTION_MANAGE_UNKNOWN_APP_SOURCES,
+                                                    Uri.parse(
+                                                        "package:" +
+                                                            context
+                                                                .packageName
+                                                    )
+                                                )
+                                            )
+                                        } else {
+                                            coroutineScope.launch {
+                                                downloadStatus =
+                                                    "Downloading..."
+                                                downloadProgress = 0
+
+                                                val downloadedApk =
+                                                    downloadUpdateApk(
+                                                        context = context,
+                                                        url = apkUrl,
+                                                        expectedSha256 =
+                                                            result.apkSha256,
+                                                        onProgress = {
+                                                            downloadProgress =
+                                                                it
+                                                        }
+                                                    )
+
+                                                if (downloadedApk == null) {
+                                                    downloadStatus =
+                                                        "Download or " +
+                                                            "verification " +
+                                                            "failed."
+                                                } else {
+                                                    downloadStatus =
+                                                        "Opening Android " +
+                                                            "installer..."
+                                                    openApkInstaller(
+                                                        context,
+                                                        downloadedApk
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
                                 },
-                                enabled = result.apkDownloadUrl != null,
+                                enabled =
+                                    result.apkDownloadUrl != null &&
+                                        downloadStatus !=
+                                            "Downloading...",
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(top = 18.dp),
@@ -1695,12 +1867,26 @@ private fun UpdatesScreen() {
                                     containerColor = DataBlue
                                 )
                             ) {
+                                Text("Download and install APK")
+                            }
+
+                            if (downloadStatus != null) {
                                 Text(
-                                    if (result.apkDownloadUrl != null) {
-                                        "Download APK"
-                                    } else {
-                                        "APK unavailable"
-                                    }
+                                    text =
+                                        if (
+                                            downloadStatus ==
+                                                "Downloading..."
+                                        ) {
+                                            "Downloading... " +
+                                                "$downloadProgress%"
+                                        } else {
+                                            downloadStatus ?: ""
+                                        },
+                                    modifier =
+                                        Modifier.padding(top = 10.dp),
+                                    color = TextMuted,
+                                    fontSize = 13.sp,
+                                    textAlign = TextAlign.Center
                                 )
                             }
 
@@ -1798,7 +1984,8 @@ private suspend fun checkForDataNudgeUpdate(): UpdateCheckResult {
                     latestVersion = null,
                     releaseUrl = null,
                     apkDownloadUrl = null,
-                    errorMessage =
+                    apkSha256 = null,
+                errorMessage =
                         "Update check failed. GitHub returned " +
                             "$responseCode."
                 )
@@ -1818,6 +2005,7 @@ private suspend fun checkForDataNudgeUpdate(): UpdateCheckResult {
 
             val assets = response.optJSONArray("assets")
             var apkDownloadUrl: String? = null
+            var apkSha256: String? = null
 
             if (assets != null) {
                 for (index in 0 until assets.length()) {
@@ -1829,6 +2017,13 @@ private suspend fun checkForDataNudgeUpdate(): UpdateCheckResult {
                             asset
                                 .optString("browser_download_url")
                                 .ifBlank { null }
+
+                        apkSha256 =
+                            asset
+                                .optString("digest")
+                                .removePrefix("sha256:")
+                                .ifBlank { null }
+
                         break
                     }
                 }
@@ -1842,6 +2037,7 @@ private suspend fun checkForDataNudgeUpdate(): UpdateCheckResult {
                         .optString("html_url")
                         .ifBlank { null },
                 apkDownloadUrl = apkDownloadUrl,
+                apkSha256 = apkSha256,
                 errorMessage = null
             )
         } catch (_: Exception) {
@@ -1849,6 +2045,7 @@ private suspend fun checkForDataNudgeUpdate(): UpdateCheckResult {
                 latestVersion = null,
                 releaseUrl = null,
                 apkDownloadUrl = null,
+                apkSha256 = null,
                 errorMessage =
                     "Could not check for updates. Check your " +
                         "internet connection and try again."
@@ -1859,6 +2056,152 @@ private suspend fun checkForDataNudgeUpdate(): UpdateCheckResult {
     }
 }
 
+
+private suspend fun downloadUpdateApk(
+    context: Context,
+    url: String,
+    expectedSha256: String?,
+    onProgress: (Int) -> Unit
+): File? {
+    return withContext(Dispatchers.IO) {
+        var connection: HttpURLConnection? = null
+
+        try {
+            val updateDirectory =
+                File(context.cacheDir, "updates").apply {
+                    mkdirs()
+                }
+
+            val target =
+                File(
+                    updateDirectory,
+                    "DataNudge-update.apk"
+                )
+
+            connection =
+                (URL(url).openConnection() as HttpURLConnection)
+                    .apply {
+                        instanceFollowRedirects = true
+                        connectTimeout = 20_000
+                        readTimeout = 30_000
+                        setRequestProperty(
+                            "User-Agent",
+                            "DataNudge-Android"
+                        )
+                    }
+
+            if (connection.responseCode !in 200..299) {
+                return@withContext null
+            }
+
+            val length = connection.contentLengthLong
+            var copied = 0L
+
+            connection.inputStream.use { input ->
+                target.outputStream().use { output ->
+                    val buffer = ByteArray(32 * 1024)
+
+                    while (true) {
+                        val count = input.read(buffer)
+
+                        if (count < 0) {
+                            break
+                        }
+
+                        output.write(buffer, 0, count)
+                        copied += count
+
+                        if (length > 0L) {
+                            val progress =
+                                (
+                                    copied * 100L / length
+                                ).toInt()
+                                    .coerceIn(0, 100)
+
+                            withContext(Dispatchers.Main) {
+                                onProgress(progress)
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (!expectedSha256.isNullOrBlank()) {
+                val actual =
+                    sha256(target)
+
+                if (
+                    !actual.equals(
+                        expectedSha256,
+                        ignoreCase = true
+                    )
+                ) {
+                    target.delete()
+                    return@withContext null
+                }
+            }
+
+            withContext(Dispatchers.Main) {
+                onProgress(100)
+            }
+
+            target
+        } catch (_: Exception) {
+            null
+        } finally {
+            connection?.disconnect()
+        }
+    }
+}
+
+private fun sha256(file: File): String {
+    val digest =
+        MessageDigest.getInstance("SHA-256")
+
+    file.inputStream().use { input ->
+        val buffer = ByteArray(32 * 1024)
+
+        while (true) {
+            val count = input.read(buffer)
+
+            if (count < 0) {
+                break
+            }
+
+            digest.update(buffer, 0, count)
+        }
+    }
+
+    return digest
+        .digest()
+        .joinToString("") { byte ->
+            "%02x".format(byte)
+        }
+}
+
+private fun openApkInstaller(
+    context: Context,
+    apkFile: File
+) {
+    val apkUri =
+        androidx.core.content.FileProvider.getUriForFile(
+            context,
+            context.packageName + ".fileprovider",
+            apkFile
+        )
+
+    val intent =
+        Intent(Intent.ACTION_INSTALL_PACKAGE).apply {
+            data = apkUri
+            flags =
+                Intent.FLAG_GRANT_READ_URI_PERMISSION or
+                    Intent.FLAG_ACTIVITY_NEW_TASK
+            putExtra(Intent.EXTRA_NOT_UNKNOWN_SOURCE, true)
+            putExtra(Intent.EXTRA_RETURN_RESULT, false)
+        }
+
+    context.startActivity(intent)
+}
 private fun isNewerVersion(
     candidate: String,
     current: String
@@ -2343,6 +2686,8 @@ private fun formatApproximateDataUsage(
 
     return "Approximately $value used since the connection changed"
 }
+
+
 
 
 

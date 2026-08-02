@@ -4,7 +4,7 @@
 
 # DataNudge Bugs and Features
 
-**Current released version:** `0.1.4.2`  
+**Current released version:** `0.1.5.0`  
 **Next planned bug-fix version:** `0.1.0.2`  
 **Next planned feature version:** `0.1.1.0`  
 **Last updated:** 1 August 2026
@@ -174,4 +174,21 @@ Add a clearly visible `Close` button while retaining support for the Android bac
 - Fixed inconsistent data-used refresh after returning from the background.
 - Added immediate lifecycle refresh on ON_RESUME.
 - The foreground UI refresh pauses while DataNudge is backgrounded.
+
+
+## Completed in 0.1.5.0
+
+- Added automatic GitHub update checks approximately once per day.
+- Added a Settings switch for automatic update checks.
+- Uses unique WorkManager jobs to prevent duplicate schedules.
+- Manual opening of Updates performs a fresh check.
+- The existing monitoring notification shows when an update is available.
+- Tapping an update-aware monitoring notification opens Updates.
+- Added Download and install APK.
+- Shows download progress.
+- Verifies the GitHub-provided SHA-256 digest when available.
+- Opens the Android package installer after downloading.
+- Handles Android's per-app Install unknown apps permission.
+- Installation still requires explicit Android user confirmation.
+- Automatic checking is intended for the GitHub/testing build; a future Play build should use Play-managed updates.
 

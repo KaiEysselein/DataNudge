@@ -4,8 +4,8 @@
 **Repository:** `https://github.com/KaiEysselein/DataNudge`  
 **Local project path:** `D:\Github\DataNudge`  
 **Application ID:** `com.kaieysselein.datanudge`  
-**Current released version:** `0.1.4.2`  
-**Current GitHub release tag:** `v0.1.4.2`  
+**Current released version:** `0.1.5.0`  
+**Current GitHub release tag:** `v0.1.5.0`  
 **Licence:** GNU General Public License v3.0  
 **Last updated:** 1 August 2026
 
@@ -91,20 +91,20 @@ Responsibilities include:
 ### Version and code
 
 ```text
-Version name: 0.1.4.2
+Version name: 0.1.5.0
 Version code: 10001
 ```
 
 ### GitHub release
 
 ```text
-https://github.com/KaiEysselein/DataNudge/releases/tag/v0.1.4.2
+https://github.com/KaiEysselein/DataNudge/releases/tag/v0.1.5.0
 ```
 
 ### Direct APK
 
 ```text
-https://github.com/KaiEysselein/DataNudge/releases/download/v0.1.4.2/DataNudge-0.1.4.2.apk
+https://github.com/KaiEysselein/DataNudge/releases/download/v0.1.5.0/DataNudge-0.1.5.0.apk
 ```
 
 ### APK SHA-256
@@ -159,18 +159,18 @@ major.play-store-publication.feature.bug-fix
 Examples:
 
 ```text
-0.1.4.2  current release
-0.1.4.2  next bug-fix release
-0.1.4.2  next feature release
+0.1.5.0  current release
+0.1.5.0  next bug-fix release
+0.1.5.0  next feature release
 ```
 
 ## 8. Planned work
 
 Read `BUGS_AND_FEATURES.md`.
 
-The next planned bug-fix release is `0.1.4.2`.
+The next planned bug-fix release is `0.1.5.0`.
 
-The next planned feature release is `0.1.4.2`, which will add current connection duration.
+The next planned feature release is `0.1.5.0`, which will add current connection duration.
 
 ## 9. Build environment
 
@@ -336,4 +336,21 @@ The Home screen refreshes its connection session immediately on
 ON_RESUME and once per second while the Activity is visible. The UI
 refresh loop pauses while the app is backgrounded and does not reset the
 persisted connection-session baseline.
+
+
+
+## Automatic update architecture
+
+UpdateCheckWorker.kt contains the daily WorkManager worker and the
+persistent update-state manager. Work is scheduled as unique periodic
+work with a connected-network constraint. The monitoring service reads
+the stored update state and adds an update line to its existing ongoing
+notification.
+
+The Updates page always performs a fresh check. For GitHub/testing
+builds it can download the APK into the app cache, verify the GitHub
+asset SHA-256 digest when supplied, expose the file through FileProvider,
+and open Android's installer. Android user confirmation remains
+mandatory. A future Google Play build should disable this GitHub
+installation path and use Play-managed updates.
 

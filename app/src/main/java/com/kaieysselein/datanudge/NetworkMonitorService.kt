@@ -115,6 +115,25 @@ class NetworkMonitorService : Service() {
         flags: Int,
         startId: Int
     ): Int {
+        if (intent?.action == ACTION_REFRESH_NOTIFICATION) {
+            val status =
+                getConnectionStatus(connectivityManager)
+
+            lastConnectionStatus = status
+
+            getSystemService(
+                NotificationManager::class.java
+            ).notify(
+                MONITORING_NOTIFICATION_ID,
+                createMonitoringNotification(
+                    status = status,
+                    silent = true
+                )
+            )
+
+            return START_STICKY
+        }
+
         setMonitoringEnabled(this, true)
         return START_STICKY
     }
@@ -191,19 +210,53 @@ class NetworkMonitorService : Service() {
         status: String,
         silent: Boolean
     ): Notification {
+        val updateInfo =
+            UpdateCheckScheduler.getStoredUpdate(this)
+
+        val openAppIntent =
+            Intent(
+                this,
+                MainActivity::class.java
+            ).apply {
+                flags =
+                    Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                        Intent.FLAG_ACTIVITY_SINGLE_TOP
+
+                putExtra(
+                    MainActivity.EXTRA_OPEN_UPDATES,
+                    updateInfo.updateAvailable
+                )
+            }
+
         val openAppPendingIntent =
             PendingIntent.getActivity(
                 this,
                 0,
-                Intent(this, MainActivity::class.java),
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                openAppIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or
+                    PendingIntent.FLAG_IMMUTABLE
             )
+
+        val contentText =
+            if (
+                updateInfo.updateAvailable &&
+                !updateInfo.latestVersion.isNullOrBlank()
+            ) {
+                "Current connection: $status\n" +
+                    "Update ${updateInfo.latestVersion} available"
+            } else {
+                "Current connection: $status"
+            }
 
         val builder =
             NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
                 .setSmallIcon(getStatusBarIconResId(status))
                 .setContentTitle("DataNudge")
-                .setContentText("Current connection: $status")
+                .setContentText(contentText)
+                .setStyle(
+                    NotificationCompat.BigTextStyle()
+                        .bigText(contentText)
+                )
                 .setContentIntent(openAppPendingIntent)
                 .setOngoing(true)
                 .setAutoCancel(false)
@@ -490,6 +543,9 @@ class NetworkMonitorService : Service() {
     }
 
     companion object {
+        const val ACTION_REFRESH_NOTIFICATION =
+            "com.kaieysselein.datanudge.REFRESH_NOTIFICATION"
+
         private const val NOTIFICATION_CHANNEL_ID =
             "datanudge_connection_status_v3"
 
@@ -720,5 +776,6 @@ fun describeNetworkCapabilities(
             "Other connection"
     }
 }
+
 
 
