@@ -1,7 +1,7 @@
-﻿# DataNudge
+# DataNudge
 
 <p align="center">
-  <a href="https://github.com/KaiEysselein/DataNudge/releases/download/v0.2.3.1/DataNudge-0.2.3.1.apk"><strong>Download DataNudge 0.2.1.0 APK</strong></a>
+  <a href="https://github.com/KaiEysselein/DataNudge/releases/download/v0.2.3.1/DataNudge-0.2.3.1.apk"><strong>Download DataNudge 0.2.3.1 APK</strong></a>
   &nbsp;|&nbsp;
   <a href="https://github.com/KaiEysselein/DataNudge/releases/tag/v0.2.3.1">View release details</a>
 </p>
