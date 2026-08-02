@@ -1,9 +1,9 @@
 ﻿# DataNudge
 
 <p align="center">
-  <a href="https://github.com/KaiEysselein/DataNudge/releases/download/v0.1.0.2/DataNudge-0.1.0.2.apk"><strong>Download DataNudge 0.1.0.2 APK</strong></a>
+  <a href="https://github.com/KaiEysselein/DataNudge/releases/download/v0.1.0.3/DataNudge-0.1.0.3.apk"><strong>Download DataNudge 0.1.0.3 APK</strong></a>
   &nbsp;|&nbsp;
-  <a href="https://github.com/KaiEysselein/DataNudge/releases/tag/v0.1.0.2">View release details</a>
+  <a href="https://github.com/KaiEysselein/DataNudge/releases/tag/v0.1.0.3">View release details</a>
 </p>
 
 > **Android installation:** Download the APK, open it on your phone, and choose **Update** or **Install**. Android may ask you to allow installation from your browser or file manager.
@@ -13,7 +13,7 @@
 
 Choose apps such as YouTube, Netflix, Spotify, TikTok, or Instagram. When one of the selected apps opens while the phone is using mobile data, DataNudge displays a clear reminder.
 
-**Current version:** `0.1.0.2`
+**Current version:** `0.1.0.3`
 
 ## What DataNudge does
 
@@ -107,7 +107,8 @@ The current development backlog and project handover notes are maintained in:
 - [Bugs and planned features](BUGS_AND_FEATURES.md)
 - [ChatGPT project handover](HANDOVER.md)
 
-The next planned maintenance release is `0.1.0.2`.  
+The next planned maintenance release is `0.1.0.3`.  
 The next planned feature release is `0.1.1.0`.
+
 
 
