@@ -11,7 +11,7 @@
 <header class="hero">
   <nav><strong>DataNudge</strong><span><a href="#features">Features</a><a href="privacy.html">Privacy</a><a href="https://github.com/KaiEysselein/DataNudge">GitHub</a></span></nav>
   <main class="hero-inner">
-    <img src="assets/datanudge-icon.png" alt="DataNudge icon">
+    <img src="assets/datanudge-logo-transparent.png" alt="DataNudge icon">
     <p class="eyebrow">ANDROID MOBILE-DATA REMINDER</p>
     <h1>Know when selected apps open on mobile data.</h1>
     <p class="lead">Choose apps such as YouTube, Netflix, or Spotify. DataNudge reminds you when one opens while your phone is connected through mobile data.</p>
@@ -20,12 +20,12 @@
   <a href="disclaimer.html">Read the Disclaimer and Terms of Use</a>.
 </p>
 <div class="actions">
-  <a class="button download" href="https://github.com/KaiEysselein/DataNudge/releases/download/v0.2.1.0/DataNudge-0.2.1.0.apk">Download APK</a>
-  <a class="button secondary" href="https://github.com/KaiEysselein/DataNudge/releases/tag/v0.2.1.0">Release details</a>
+  <a id="download-apk" class="button download" href="https://github.com/KaiEysselein/DataNudge/releases/download/v0.2.3.1/DataNudge-0.2.3.1.apk">Download APK</a>
+  <a id="release-details" class="button secondary" href="https://github.com/KaiEysselein/DataNudge/releases/tag/v0.2.3.1">Release details</a>
   <a class="button secondary" href="https://github.com/KaiEysselein/DataNudge">View source</a>
 </div>
 <p class="install-note">Android may ask you to allow installation from your browser or file manager.</p>
-    <p class="muted">Current download: 0.2.1.0</p>
+    <p id="current-download" class="muted">Current download: 0.2.3.1</p>
   </main>
 </header>
 
@@ -64,6 +64,48 @@
   </div>
 </section>
 <footer>
+
+<script>
+(function () {
+  const apiUrl =
+    "https://api.github.com/repos/KaiEysselein/DataNudge/releases/latest";
+
+  fetch(apiUrl, {
+    headers: { "Accept": "application/vnd.github+json" }
+  })
+    .then(function (response) {
+      if (!response.ok) {
+        throw new Error("Latest release request failed");
+      }
+      return response.json();
+    })
+    .then(function (release) {
+      const apk = (release.assets || []).find(function (asset) {
+        return asset.name.toLowerCase().endsWith(".apk");
+      });
+
+      if (!apk) {
+        return;
+      }
+
+      const version = String(release.tag_name || "").replace(/^v/, "");
+      const downloadLink = document.getElementById("download-apk");
+      const detailsLink = document.getElementById("release-details");
+      const currentText = document.getElementById("current-download");
+
+      downloadLink.href = apk.browser_download_url;
+      detailsLink.href = release.html_url;
+
+      if (version) {
+        currentText.textContent = "Current download: " + version;
+      }
+    })
+    .catch(function () {
+      // Keep the verified static fallback links above.
+    });
+}());
+</script>
+
 </body>
 </html>
 
