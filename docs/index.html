@@ -3,108 +3,109 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>DataNudge</title>
-  <meta name="description" content="DataNudge reminds you when selected apps open while your phone is using mobile data.">
+  <title>DataNudge — Android mobile-data reminders</title>
+  <meta name="description" content="DataNudge reminds you when selected Android apps open while your phone is using mobile data.">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <header class="hero">
-  <nav><strong>DataNudge</strong><span><a href="#features">Features</a><a href="privacy.html">Privacy</a><a href="https://github.com/KaiEysselein/DataNudge">GitHub</a></span></nav>
+  <nav aria-label="Primary navigation">
+    <a class="brand" href="index.html">DataNudge</a>
+    <span><a href="#downloads">Downloads</a><a href="#features">Features</a><a href="privacy.html">Privacy</a><a href="https://github.com/KaiEysselein/DataNudge">GitHub</a></span>
+  </nav>
   <main class="hero-inner">
-    <img src="assets/datanudge-logo-transparent.png" alt="DataNudge icon">
+    <img src="assets/datanudge-logo-transparent.png" alt="DataNudge shield logo">
     <p class="eyebrow">ANDROID MOBILE-DATA REMINDER</p>
-    <h1>Know when selected apps open on mobile data.</h1>
-    <p class="lead">Choose installed apps such as YouTube, Netflix, or Spotify. DataNudge reminds you when one opens while your phone is connected through mobile data.</p>
-    <p class="download-warning">
-  By downloading and using DataNudge, you acknowledge that the app is an informational reminder only, may use device resources and battery, and does not prevent mobile-data charges.
-  <a href="disclaimer.html">Read the Disclaimer and Terms of Use</a>.
-</p>
-<div class="actions">
-  <a id="download-apk" class="button download" href="https://github.com/KaiEysselein/DataNudge/releases/download/v0.2.3.1/DataNudge-0.2.3.1.apk">Download APK</a>
-  <a id="release-details" class="button secondary" href="https://github.com/KaiEysselein/DataNudge/releases/tag/v0.2.3.1">Release details</a>
-  <a class="button secondary" href="https://github.com/KaiEysselein/DataNudge">View source</a>
-</div>
-<p class="install-note">Android may ask you to allow installation from your browser or file manager.</p>
-    <p id="current-download" class="muted">Current download: 0.2.3.1</p>
+    <h1>Know before selected apps use mobile data.</h1>
+    <p class="lead">Choose the apps that matter to you. DataNudge watches your connection quietly and displays a clear reminder when one opens on mobile data.</p>
+    <div class="actions"><a class="button download" href="#stable-download">Download stable</a><a class="button secondary" href="#nightly-download">Explore nightly</a></div>
+    <p class="hero-note">No account. No analytics. No developer data collection.</p>
   </main>
 </header>
 
+<section id="downloads">
+  <p class="eyebrow">CHOOSE YOUR CHANNEL</p>
+  <div class="section-heading">
+    <div><h2>Stable for daily use. Nightly for testing.</h2><p class="lead">Both builds come from this open-source repository. Automatic in-app updates follow the stable channel only.</p></div>
+    <a class="text-link" href="https://github.com/KaiEysselein/DataNudge/releases">View all releases →</a>
+  </div>
+  <div class="release-grid">
+    <article id="stable-download" class="release-card stable-card">
+      <div class="release-card-top"><span class="badge stable-badge">Recommended</span><span id="stable-status" class="status">Stable</span></div>
+      <h3>Stable build</h3>
+      <p>Tested releases intended for normal use. This is the only channel checked by DataNudge’s automatic updater.</p>
+      <dl><div><dt>Version</dt><dd id="stable-version">0.2.3.1</dd></div><div><dt>Updates</dt><dd>Automatic or manual</dd></div></dl>
+      <a id="stable-apk" class="button download full" href="https://github.com/KaiEysselein/DataNudge/releases/download/v0.2.3.1/DataNudge-0.2.3.1.apk">Download stable APK</a>
+      <a id="stable-details" class="release-link" href="https://github.com/KaiEysselein/DataNudge/releases/tag/v0.2.3.1">Release notes and checksum</a>
+    </article>
+    <article id="nightly-download" class="release-card nightly-card">
+      <div class="release-card-top"><span class="badge nightly-badge">Testers</span><span id="nightly-status" class="status">Not currently published</span></div>
+      <h3>Nightly build</h3>
+      <p>The newest development build. It may contain unfinished changes, regressions, or signing requirements and must be installed manually.</p>
+      <dl><div><dt>Version</dt><dd id="nightly-version">No nightly available</dd></div><div><dt>Updates</dt><dd>Manual only</dd></div></dl>
+      <a id="nightly-apk" class="button secondary full disabled" href="https://github.com/KaiEysselein/DataNudge/releases" aria-disabled="true" tabindex="-1">Nightly unavailable</a>
+      <a id="nightly-details" class="release-link" href="https://github.com/KaiEysselein/DataNudge/releases">Browse prereleases</a>
+    </article>
+  </div>
+  <div class="warning"><strong>Before installing</strong><p>Android may ask you to allow installation from your browser or file manager. DataNudge is an informational reminder and does not block mobile data or prevent provider charges.</p><a href="disclaimer.html">Read the Disclaimer and Terms of Use</a></div>
+</section>
+
 <section id="features">
-  <p class="eyebrow">FEATURES</p>
-  <h2>A simple nudge before mobile data disappears.</h2>
+  <p class="eyebrow">WHAT IT DOES</p><h2>A focused reminder, not another dashboard.</h2>
   <div class="grid">
-    <article><h3>App monitoring</h3><p>Choose the installed apps you want DataNudge to monitor.</p></article>
-    <article><h3>Connection awareness</h3><p>See whether the phone is on Wi-Fi, mobile data, VPN, or offline.</p></article>
-    <article><h3>Clear reminders</h3><p>Receive a clear reminder when a selected app opens on mobile data.</p></article>
-    <article><h3>Local settings</h3><p>Your selections and preferences are stored locally on your device.</p></article>
+    <article><span>01</span><h3>Choose your apps</h3><p>Select launchable apps installed on your phone. Your choices remain local.</p></article>
+    <article><span>02</span><h3>Watch the connection</h3><p>See Wi-Fi, mobile data, VPN, Ethernet, Bluetooth networking, or offline status.</p></article>
+    <article><span>03</span><h3>Receive a nudge</h3><p>When a selected app opens on mobile data, DataNudge displays a reminder above it.</p></article>
+    <article><span>04</span><h3>Keep monitoring</h3><p>User-enabled background monitoring can continue after the main screen is closed.</p></article>
   </div>
 </section>
 
-<section>
-  <p class="eyebrow">HOW IT WORKS</p>
-  <h2>Set it once, then let it watch quietly.</h2>
-  <ol>
-    <li>Grant the required Android permissions.</li>
-    <li>Select the apps you want to monitor.</li>
-    <li>Start background monitoring.</li>
-    <li>Get reminded when a selected app opens on mobile data.</li>
-  </ol>
+<section class="steps">
+  <div><p class="eyebrow">SET UP ONCE</p><h2>Android stays in control.</h2><p class="lead">The guided setup explains each permission. Installation, updates, and permission changes always require your action or Android confirmation.</p></div>
+  <ol><li><b>1</b>Grant notification, Usage Access, and overlay permissions.</li><li><b>2</b>Select the installed apps you want to monitor.</li><li><b>3</b>Enable monitoring and let DataNudge run quietly.</li></ol>
 </section>
 
-<section>
-  <p class="eyebrow">DEVELOPMENT</p>
-  <h2>Roadmap and project notes</h2>
-  <p class="lead">DataNudge is actively being refined. The public backlog and project handover are available on GitHub.</p>
-  <div class="actions">
-    <a class="button secondary" href="https://github.com/KaiEysselein/DataNudge/blob/main/BUGS_AND_FEATURES.md">Bugs and features</a>
-    <a class="button secondary" href="https://github.com/KaiEysselein/DataNudge/blob/main/HANDOVER.md">Project handover</a>
-  </div>
+<section class="project">
+  <p class="eyebrow">OPEN DEVELOPMENT</p><h2>Follow the project.</h2><p class="lead">DataNudge is alpha software. Source code, release history, planned work, privacy information, and licence terms are public.</p>
+  <div class="actions left"><a class="button secondary" href="https://github.com/KaiEysselein/DataNudge">Repository</a><a class="button secondary" href="https://github.com/KaiEysselein/DataNudge/blob/main/BUGS_AND_FEATURES.md">Roadmap</a><a class="button secondary" href="privacy.html">Privacy</a></div>
 </section>
 
-<footer>
-  <p>DataNudge by Kai Eysselein</p>
-  <p><a href="privacy.html">Privacy information</a></p>
-</footer>
+<footer><strong>DataNudge</strong><p>Built by Kai Eysselein · Licensed under GPLv3</p><p><a href="privacy.html">Privacy</a> · <a href="disclaimer.html">Disclaimer</a> · <a href="https://github.com/KaiEysselein/DataNudge">GitHub</a></p></footer>
+
 <script>
 (function () {
-  const apiUrl =
-    "https://api.github.com/repos/KaiEysselein/DataNudge/releases/latest";
+  "use strict";
+  const api = "https://api.github.com/repos/KaiEysselein/DataNudge";
+  const options = { headers: { "Accept": "application/vnd.github+json" } };
+  function apk(release) { return (release.assets || []).find(function (asset) { return String(asset.name || "").toLowerCase().endsWith(".apk"); }); }
+  function version(release) { return String(release.tag_name || "").replace(/^v/, ""); }
 
-  fetch(apiUrl, {
-    headers: { "Accept": "application/vnd.github+json" }
-  })
-    .then(function (response) {
-      if (!response.ok) {
-        throw new Error("Latest release request failed");
-      }
-      return response.json();
-    })
-    .then(function (release) {
-      const apk = (release.assets || []).find(function (asset) {
-        return asset.name.toLowerCase().endsWith(".apk");
-      });
+  fetch(api + "/releases/latest", options).then(function (response) {
+    if (!response.ok) throw new Error("Stable release request failed"); return response.json();
+  }).then(function (release) {
+    const asset = apk(release); if (!asset) return;
+    document.getElementById("stable-version").textContent = version(release);
+    document.getElementById("stable-apk").href = asset.browser_download_url;
+    document.getElementById("stable-details").href = release.html_url;
+    document.getElementById("stable-status").textContent = "Latest stable";
+  }).catch(function () { /* Preserve the verified v0.2.3.1 fallback. */ });
 
-      if (!apk) {
-        return;
-      }
-
-      const version = String(release.tag_name || "").replace(/^v/, "");
-      const downloadLink = document.getElementById("download-apk");
-      const detailsLink = document.getElementById("release-details");
-      const currentText = document.getElementById("current-download");
-
-      downloadLink.href = apk.browser_download_url;
-      detailsLink.href = release.html_url;
-
-      if (version) {
-        currentText.textContent = "Current download: " + version;
-      }
-    })
-    .catch(function () {
-      // Keep the verified static fallback links above.
+  fetch(api + "/releases?per_page=20", options).then(function (response) {
+    if (!response.ok) throw new Error("Nightly release request failed"); return response.json();
+  }).then(function (releases) {
+    const nightly = releases.find(function (release) {
+      const identity = String(release.tag_name || "") + " " + String(release.name || "");
+      return release.prerelease === true && /nightly/i.test(identity) && apk(release);
     });
+    if (!nightly) return;
+    const download = document.getElementById("nightly-apk");
+    document.getElementById("nightly-version").textContent = version(nightly);
+    document.getElementById("nightly-status").textContent = "Experimental prerelease";
+    document.getElementById("nightly-details").href = nightly.html_url;
+    download.href = apk(nightly).browser_download_url; download.textContent = "Download nightly APK";
+    download.classList.remove("disabled"); download.removeAttribute("aria-disabled"); download.removeAttribute("tabindex");
+  }).catch(function () { /* Keep Nightly unavailable when no verified prerelease resolves. */ });
 }());
 </script>
-
 </body>
 </html>

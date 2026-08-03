@@ -1,7 +1,7 @@
 # DataNudge
 
 <p align="center">
-  <a href="https://github.com/KaiEysselein/DataNudge/releases/download/v0.2.3.1/DataNudge-0.2.3.1.apk"><strong>Download DataNudge 0.2.3.1 APK</strong></a>
+  <a href="https://github.com/KaiEysselein/DataNudge/releases/download/v0.2.3.1/DataNudge-0.2.3.1.apk"><strong>Download stable DataNudge 0.2.3.1 APK</strong></a>
   &nbsp;|&nbsp;
   <a href="https://github.com/KaiEysselein/DataNudge/releases/tag/v0.2.3.1">View release details</a>
 </p>
@@ -15,6 +15,22 @@
 Choose installed apps such as YouTube, Netflix, Spotify, TikTok, or Instagram. When a selected app opens while the phone is using mobile data, DataNudge displays a clear reminder.
 
 **Current version:** `0.2.3.1`
+
+## Release channels
+
+### Stable
+
+Stable releases are recommended for normal use. DataNudge's manual and automatic in-app update checks use GitHub's latest full-release endpoint and therefore follow this channel only.
+
+- [Download the current stable APK](https://github.com/KaiEysselein/DataNudge/releases/download/v0.2.3.1/DataNudge-0.2.3.1.apk)
+- [View the current stable release](https://github.com/KaiEysselein/DataNudge/releases/tag/v0.2.3.1)
+
+### Nightly
+
+Nightly builds are optional GitHub prereleases for testers. They may contain unfinished changes or regressions, require manual installation, and are never returned by DataNudge's stable update check. No nightly build is currently published.
+
+- [Browse releases and prereleases](https://github.com/KaiEysselein/DataNudge/releases)
+- Nightly builds must be explicitly marked as GitHub prereleases and include `nightly` in their release tag or title.
 
 ## What DataNudge does
 
