@@ -423,3 +423,13 @@ browser or another registered link handler.
 - GitHub Pages automatically resolves the latest release APK.
 - Transparent website logo stored under docs/assets.
 
+
+## Local Housekeeping and Working Files
+
+- `Backups/` is the standard local-only location for project backup snapshots.
+- `Temp/` is the standard local-only working directory for temporary, generated, downloaded, extracted, or intermediate files used during DataNudge development and maintenance.
+- When AI-assisted PowerShell or shell commands download or generate project-related working files, they should use `D:\Kai\GitHub\DataNudge\Temp\` by default rather than the user's general Windows Downloads folder.
+- `Backups/` and `Temp/` are intentionally excluded from Git via `.gitignore`.
+- Files should only be moved from `Temp/` into tracked project directories when they are deliberately intended to become part of the DataNudge source, documentation, assets, or release material.
+- Android/IDE-generated local directories such as `.gradle/`, `.idea/`, `.kotlin/`, `build/`, and `app/build/` are also excluded from Git as appropriate.
+
